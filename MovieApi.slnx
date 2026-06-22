@@ -1,4 +1,6 @@
 <Solution>
+  <Project Path="Movie.Core/Movie.Core.csproj" Id="338c513b-60c0-4eb2-a650-275cf7b21d71" />
+  <Project Path="Movie.Data/Movie.Data.csproj" Id="b4b4aa26-401f-44ef-a7ce-acf075c8f641" />
   <Project Path="MovieApi.csproj" />
   <Project Path="MovieApi.Tests/MovieApi.Tests.csproj" />
 </Solution>
