@@ -1,9 +1,10 @@
 using Microsoft.EntityFrameworkCore;
-using MovieApi.Data.Seed;
-using MovieApi.Interfaces.Data;
+using MovieApi.Extensions;
 using MovieApi.Interfaces.Service;
 using MovieApi.Services;
 using Scalar.AspNetCore;
+using Movie.Data.Context;
+
 namespace MovieApi;
 
 public class Program

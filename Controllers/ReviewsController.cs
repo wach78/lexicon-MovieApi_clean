@@ -1,11 +1,11 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using MovieApi.DTOs.Actor;
-using MovieApi.DTOs.Review;
+using Movie.Core.DTOs.Actor;
+using Movie.Core.DTOs.Review;
 using MovieApi.Interfaces.Service;
-using MovieApi.Models;
-
+using Movie.Core.Entities;
+using MovieEntity = Movie.Core.Entities.Movie;
 namespace MovieApi.Controllers;
 
 [Route("api/[controller]")]
@@ -56,11 +56,11 @@ public class ReviewsController : ControllerBase
     [HttpPost("/api/movies/{movieId:guid}/reviews")]
     public async Task<ActionResult<ReviewDto>> PostReview([FromRoute] Guid movieId, [FromBody] ReviewCreateDto reviewCreateDto)
     {
-        Movie? movie = await _context.Movie
+        MovieEntity? movie = await _context.Movie
             .Include(movie => movie.Reviews)
             .FirstOrDefaultAsync(movie => movie.Id == movieId);
 
-        if (movie == null)
+        if (movie is null)
         {
             return NotFound();
         }

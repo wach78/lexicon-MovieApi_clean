@@ -1,7 +1,6 @@
-using MovieApi.DTOs.Actor;
-using MovieApi.DTOs.Movie;
-using MovieApi.DTOs.Report;
-using MovieApi.DTOs.Reports;
+using Movie.Core.DTOs.Actor;
+using Movie.Core.DTOs.Movie;
+using Movie.Core.DTOs.Report;
 namespace MovieApi.Interfaces.Service;
 
 public interface IReportsService

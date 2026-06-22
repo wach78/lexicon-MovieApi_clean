@@ -1,4 +1,4 @@
-using MovieApi.DTOs.Review;
+using Movie.Core.DTOs.Review;
 namespace MovieApi.Interfaces.Service;
 
 public interface IReviewService
@@ -18,7 +18,7 @@ public interface IReviewService
 
     Task<ReviewDto> CreateReviewAsync(
         Guid movieId,
-        ReviewCreateDto reviewCreateDto,
+        Movie.Core.DTOs.Review.ReviewCreateDto reviewCreateDto,
         CancellationToken cancellationToken = default
     );
 

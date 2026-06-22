@@ -1,12 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using MovieApi.DTOs.Actor;
-using MovieApi.DTOs.Movie;
-using MovieApi.DTOs.Review;
+using Movie.Core.DTOs.Actor;
+using Movie.Core.DTOs.Movie;
+using Movie.Core.DTOs.Review;
 using MovieApi.Emuns;
 using MovieApi.Interfaces.Service;
-using MovieApi.Models;
+using Movie.Core.Entities;
 
 namespace MovieApi.Controllers;
 

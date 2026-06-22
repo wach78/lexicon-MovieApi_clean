@@ -7,13 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Extensions\**" />
-    <Content Remove="Extensions\**" />
-    <EmbeddedResource Remove="Extensions\**" />
-    <None Remove="Extensions\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.9" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.9" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.9">
@@ -21,10 +14,6 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Scalar.AspNetCore" Version="2.16.3" />
-  </ItemGroup>
-
-  <ItemGroup>
-      <Folder Include="Data\Seed\" />     
   </ItemGroup>
 
     <ItemGroup>
@@ -35,7 +24,23 @@
     </ItemGroup>
 
     <ItemGroup>
+        <Compile Remove="Movie.Core\**\*.cs" />
+        <Content Remove="Movie.Core\**\*" />
+        <EmbeddedResource Remove="Movie.Core\**\*" />
+        <None Remove="Movie.Core\**\*" />
+
+        <Compile Remove="Movie.Data\**\*.cs" />
+        <Content Remove="Movie.Data\**\*" />
+        <EmbeddedResource Remove="Movie.Data\**\*" />
+        <None Remove="Movie.Data\**\*" />
+    </ItemGroup>
+
+    <ItemGroup>
       <ProjectReference Include="Movie.Data\Movie.Data.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Migrations\" />
     </ItemGroup>
     
 

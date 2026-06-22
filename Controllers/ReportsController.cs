@@ -1,11 +1,10 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using MovieApi.DTOs.Actor;
-using MovieApi.DTOs.Movie;
-using MovieApi.DTOs.Report;
-using MovieApi.DTOs.Reports;
-using MovieApi.Models;
+using Movie.Core.DTOs.Actor;
+using Movie.Core.DTOs.Movie;
+using Movie.Core.DTOs.Report;
+using Movie.Core.Entities;
 
 namespace MovieApi.Controllers;
 

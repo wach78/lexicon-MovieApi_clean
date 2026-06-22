@@ -1,8 +1,9 @@
 using Microsoft.EntityFrameworkCore;
-using MovieApi.DTOs.Review;
-using MovieApi.Interfaces.Data;
+using Movie.Core.DTOs.Review;
+using Movie.Data.Context;
 using MovieApi.Interfaces.Service;
-using MovieApi.Models;
+using Movie.Core.Entities;
+using MovieEntity = Movie.Core.Entities.Movie;
 
 namespace MovieApi.Services;
 
@@ -31,7 +32,7 @@ public class ReviewService : IReviewService
 
     public async Task<IReadOnlyList<ReviewDto>?> GetReviewsByMovieIdAsync(Guid movieId, CancellationToken cancellationToken = default)
     {
-        Movie? movie = await _context.Movie
+        MovieEntity? movie = await _context.Movie
             .AsNoTracking()
             .FirstOrDefaultAsync(movie => movie.Id == movieId, cancellationToken);
 
@@ -60,27 +61,3 @@ public class ReviewService : IReviewService
     }
 }
 
-/*
- *  Movie? movie = await _context.Movie
-        .AsNoTracking()
-        .FirstOrDefaultAsync(movie => movie.Id == movieId);
-
-        if (movie == null)
-        {
-            return NotFound();
-        }
-
-        List<ReviewDto> reviews = await _context.Reviews
-            .AsNoTracking()
-            .Where(review => review.MovieId == movieId)
-            .Select(review => new ReviewDto
-            {
-                Id = review.Id,
-                ReviewerName = review.ReviewerName,
-                Comment = review.Comment,
-                Rating = review.Rating
-            })
-            .ToListAsync();
-
-        return Ok(reviews);
- */
