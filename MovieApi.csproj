@@ -35,8 +35,22 @@
     </ItemGroup>
 
     <ItemGroup>
+        <Compile Remove="Movie.Core\**\*.cs" />
+        <Content Remove="Movie.Core\**\*" />
+        <EmbeddedResource Remove="Movie.Core\**\*" />
+        <None Remove="Movie.Core\**\*" />
+
+        <Compile Remove="Movie.Data\**\*.cs" />
+        <Content Remove="Movie.Data\**\*" />
+        <EmbeddedResource Remove="Movie.Data\**\*" />
+        <None Remove="Movie.Data\**\*" />
+    </ItemGroup>
+
+    <ItemGroup>
       <ProjectReference Include="Movie.Data\Movie.Data.csproj" />
     </ItemGroup>
+
+    
     
 
 </Project>
