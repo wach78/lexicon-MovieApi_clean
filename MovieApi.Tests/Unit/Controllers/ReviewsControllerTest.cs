@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using MovieApi.Controllers;
-using MovieApi.DTOs.Review;
+using Movie.Core.DTOs.Review;
 using MovieApi.Interfaces.Service;
 using MovieApi.Services;
 

@@ -1,9 +1,10 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using MovieApi.DTOs.Actor;
-using MovieApi.DTOs.Movie;
-using MovieApi.Models;
+using Movie.Core.DTOs.Actor;
+using Movie.Core.DTOs.Movie;
+using Movie.Core.Entities;
+using MovieEntity = Movie.Core.Entities.Movie;
 
 namespace MovieApi.Controllers;
 
@@ -23,11 +24,11 @@ public class ActorsController : ControllerBase
         [FromRoute] Guid movieId,
         [FromRoute] Guid actorId)
     {
-        Movie? movie = await _context.Movie
+        MovieEntity? movie = await _context.Movie
             .Include(movie => movie.Actors)
             .FirstOrDefaultAsync(movie => movie.Id == movieId);
 
-        if (movie == null)
+        if (movie is null)
         {
             return NotFound("Movie was not found.");
         }
@@ -35,7 +36,7 @@ public class ActorsController : ControllerBase
         Actor? actor = await _context.Actors
             .FirstOrDefaultAsync(actor => actor.Id == actorId);
 
-        if (actor == null)
+        if (actor is null)
         {
             return NotFound("Actor was not found.");
         }

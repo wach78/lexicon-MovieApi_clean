@@ -1,4 +1,4 @@
-using MovieApi.DTOs.Actor;
+using Movie.Core.DTOs.Actor;
 namespace MovieApi.Interfaces.Service;
 
 public interface IActorService

@@ -1,4 +1,4 @@
-using MovieApi.DTOs.Movie;
+using Movie.Core.DTOs.Movie;
 using MovieApi.Emuns;
 namespace MovieApi.Interfaces.Service;
 

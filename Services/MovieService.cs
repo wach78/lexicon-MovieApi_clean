@@ -1,11 +1,12 @@
 using Microsoft.EntityFrameworkCore;
-using MovieApi.DTOs.Actor;
-using MovieApi.DTOs.Movie;
-using MovieApi.DTOs.Review;
+using Movie.Core.DTOs.Actor;
+using Movie.Core.DTOs.Movie;
+using Movie.Core.DTOs.Review;
 using MovieApi.Emuns;
-using MovieApi.Interfaces.Data;
+using Movie.Data.Context;
 using MovieApi.Interfaces.Service;
-using MovieApi.Models;
+using Movie.Core.Entities;
+using MovieEntity = Movie.Core.Entities.Movie;
 
 namespace MovieApi.Services;
 
@@ -36,7 +37,7 @@ public class MovieService : IMovieService
             }
         }
 
-        Movie movie = new(
+        MovieEntity movie = new(
             movieCreateDto.Title,
             movieCreateDto.Year,
             movieCreateDto.Duration,
@@ -60,7 +61,7 @@ public class MovieService : IMovieService
 
     public async Task<bool> DeleteMovieAsync(Guid id, CancellationToken cancellationToken)
     {
-        Movie? movie = await _context.Movie.FindAsync(
+        MovieEntity? movie = await _context.Movie.FindAsync(
             new object[] { id },
             cancellationToken
         );
@@ -146,7 +147,7 @@ public class MovieService : IMovieService
 
     public async Task<IReadOnlyList<MovieDto>> GetMoviesAsync(string? genre, int? year, string? actor, CancellationToken cancellationToken)
     {
-        IQueryable<Movie> query = _context.Movie.AsNoTracking();
+        IQueryable<MovieEntity> query = _context.Movie.AsNoTracking();
 
         if (!string.IsNullOrWhiteSpace(genre))
         {
@@ -190,7 +191,7 @@ public class MovieService : IMovieService
 
     public async Task<UpdateMovieResult> UpdateMovieAsync(Guid id, MovieUpdateDto movieUpdateDto, CancellationToken cancellationToken)
     {
-        Movie? movie = await _context.Movie
+        MovieEntity? movie = await _context.Movie
             .FirstOrDefaultAsync(
                 movie => movie.Id == id,
                 cancellationToken
