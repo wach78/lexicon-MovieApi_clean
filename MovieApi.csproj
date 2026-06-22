@@ -33,6 +33,10 @@
         <EmbeddedResource Remove="MovieApi.Tests/**/*" />
         <None Remove="MovieApi.Tests/**/*" />
     </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="Movie.Data\Movie.Data.csproj" />
+    </ItemGroup>
     
 
 </Project>
