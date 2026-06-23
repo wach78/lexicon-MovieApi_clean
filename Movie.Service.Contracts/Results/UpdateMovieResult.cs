@@ -1,4 +1,4 @@
-namespace MovieApi.Emuns;
+namespace Movie.Service.Contracts.Results;
 
 public enum UpdateMovieResult
 {

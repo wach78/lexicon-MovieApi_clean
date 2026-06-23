@@ -16,7 +16,7 @@ public sealed class ReviewRepository : IReviewRepository
         _context = context;
     }
 
-    public async Task<IEnumerable<Review>> GetAllAsync()
+    public async Task<IEnumerable<Review>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         return await _context
             .Set<Review>()
@@ -24,7 +24,7 @@ public sealed class ReviewRepository : IReviewRepository
             .ToListAsync();
     }
 
-    public async Task<Review?> GetAsync(Guid id)
+    public async Task<Review?> GetAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _context
             .Set<Review>()
@@ -57,5 +57,14 @@ public sealed class ReviewRepository : IReviewRepository
         ArgumentNullException.ThrowIfNull(review);
 
         _context.Set<Review>().Remove(review);
+    }
+
+    public async Task<IReadOnlyList<Review>> GetByMovieIdAsync(Guid movieId,CancellationToken cancellationToken = default)
+    {
+        return await _context
+            .Set<Review>()
+            .AsNoTracking()
+            .Where(review => review.MovieId == movieId)
+            .ToListAsync(cancellationToken);
     }
 }

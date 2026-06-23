@@ -4,9 +4,9 @@ using Microsoft.IdentityModel.Tokens;
 using Movie.Core.DTOs.Actor;
 using Movie.Core.DTOs.Movie;
 using Movie.Core.DTOs.Review;
-using MovieApi.Emuns;
-using MovieApi.Interfaces.Service;
+using Movie.Service.Contracts.Results;
 using Movie.Core.Entities;
+using Movie.Service.Contracts.Interfaces;
 
 namespace MovieApi.Controllers;
 

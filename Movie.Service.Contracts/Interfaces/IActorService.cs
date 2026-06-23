@@ -1,5 +1,5 @@
 using Movie.Core.DTOs.Actor;
-namespace MovieApi.Interfaces.Service;
+namespace Movie.Service.Contracts.Interfaces;
 
 public interface IActorService
 {

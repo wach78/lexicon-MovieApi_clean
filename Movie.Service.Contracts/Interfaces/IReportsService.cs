@@ -1,7 +1,7 @@
 using Movie.Core.DTOs.Actor;
 using Movie.Core.DTOs.Movie;
 using Movie.Core.DTOs.Report;
-namespace MovieApi.Interfaces.Service;
+namespace Movie.Service.Contracts.Interfaces;
 
 public interface IReportsService
 {

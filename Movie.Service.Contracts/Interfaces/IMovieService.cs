@@ -1,6 +1,6 @@
 using Movie.Core.DTOs.Movie;
-using MovieApi.Emuns;
-namespace MovieApi.Interfaces.Service;
+using Movie.Service.Contracts.Results;
+namespace Movie.Service.Contracts.Interfaces;
 
 public interface IMovieService
 {

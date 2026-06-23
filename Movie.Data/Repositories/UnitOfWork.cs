@@ -41,8 +41,8 @@ public sealed class UnitOfWork : IUnitOfWork
 
     public IGenreRepository Genres { get; }
 
-    public async Task CompleteAsync()
+    public async Task CompleteAsync(CancellationToken cancellationToken = default)
     {
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(cancellationToken);
     }
 }
