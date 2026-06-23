@@ -1,9 +1,12 @@
 using Microsoft.EntityFrameworkCore;
+using Movie.Core.DomainContracts;
+using Movie.Data;
+using Movie.Data.Context;
+using Movie.Data.Repositories;
 using MovieApi.Extensions;
 using MovieApi.Interfaces.Service;
 using MovieApi.Services;
 using Scalar.AspNetCore;
-using Movie.Data.Context;
 
 namespace MovieApi;
 
@@ -19,6 +22,14 @@ public class Program
         builder.Services.AddScoped<IMovieApiContext>(serviceProvider => serviceProvider.GetRequiredService<MovieApiContext>());
         builder.Services.AddScoped<IMovieService, MovieService>();
         builder.Services.AddScoped<IReviewService, ReviewService>();
+
+
+        builder.Services.AddScoped<IMovieRepository, MovieRepository>();
+        builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
+        builder.Services.AddScoped<IActorRepository, ActorRepository>();
+        builder.Services.AddScoped<IMovieDetailsRepository, MovieDetailsRepository>();
+        builder.Services.AddScoped<IGenreRepository, GenreRepository>();
+        builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         // Add services to the container.
 

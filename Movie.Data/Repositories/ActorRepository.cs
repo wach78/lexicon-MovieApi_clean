@@ -7,7 +7,7 @@ using Movie.Core.Entities;
 
 namespace Movie.Data.Repositories;
 
-internal class ActorRepository: IActorRepository
+public class ActorRepository: IActorRepository
 {
     private readonly MovieApiContext _context;
 
