@@ -5,23 +5,30 @@ using MovieApi.Controllers;
 using Movie.Core.DTOs.Actor;
 using Movie.Core.DTOs.Movie;
 using Movie.Core.DTOs.Review;
-using MovieApi.Emuns;
-using MovieApi.Interfaces.Service;
 using MovieApi.Models;
 using Xunit;
 using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
+using Movie.Service.Contracts.Interfaces;
+using Movie.Service.Contracts.Results;
 
 namespace MovieApi.Tests.Unit.Controllers;
 
 public sealed class MoviesControllerTests
 {
     private readonly Mock<IMovieService> _movieServiceMock;
+    private readonly Mock<IServiceManager> _serviceManagerMock;
     private readonly MoviesController _controller;
 
     public MoviesControllerTests()
     {
         _movieServiceMock = new Mock<IMovieService>(MockBehavior.Strict);
-        _controller = new MoviesController(_movieServiceMock.Object);
+        _serviceManagerMock = new Mock<IServiceManager>(MockBehavior.Strict);
+
+        _serviceManagerMock
+            .SetupGet(serviceManager => serviceManager.Movies)
+            .Returns(_movieServiceMock.Object);
+
+        _controller = new MoviesController(_serviceManagerMock.Object);
     }
 
     [Theory]

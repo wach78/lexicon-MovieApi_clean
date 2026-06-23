@@ -1,5 +1,7 @@
 using Movie.Core.DTOs.Actor;
-namespace MovieApi.Interfaces.Service;
+using Movie.Service.Contracts.Results;
+
+namespace Movie.Service.Contracts.Interfaces;
 
 public interface IActorService
 {
@@ -23,23 +25,7 @@ public interface IActorService
         CancellationToken cancellationToken = default
     );
 
-    Task<bool> MovieExistsAsync(
-        Guid movieId,
-        CancellationToken cancellationToken = default
-    );
-
-    Task<bool> ActorExistsAsync(
-        Guid actorId,
-        CancellationToken cancellationToken = default
-    );
-
-    Task<bool> IsActorAddedToMovieAsync(
-        Guid movieId,
-        Guid actorId,
-        CancellationToken cancellationToken = default
-    );
-
-    Task AddActorToMovieAsync(
+    Task<AddActorToMovieResult> AddActorToMovieAsync(
         Guid movieId,
         Guid actorId,
         CancellationToken cancellationToken = default

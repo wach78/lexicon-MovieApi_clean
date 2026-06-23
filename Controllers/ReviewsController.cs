@@ -3,8 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Movie.Core.DTOs.Actor;
 using Movie.Core.DTOs.Review;
-using MovieApi.Interfaces.Service;
 using Movie.Core.Entities;
+using Movie.Service.Contracts.Interfaces;
+using Movie.Services;
 using MovieEntity = Movie.Core.Entities.Movie;
 namespace MovieApi.Controllers;
 
@@ -12,28 +13,20 @@ namespace MovieApi.Controllers;
 [ApiController]
 public class ReviewsController : ControllerBase
 {
-    private readonly MovieApiContext _context;
-    private readonly IReviewService _reviewService;
-    public ReviewsController(MovieApiContext context, IReviewService reviewService)
+    private readonly IServiceManager _serviceManager;
+
+    public ReviewsController(IServiceManager serviceManager)
     {
-        _context = context;
-        _reviewService = reviewService;
+        ArgumentNullException.ThrowIfNull(serviceManager);
+
+        _serviceManager = serviceManager;
     }
 
     // GET: api/Reviws
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<ReviewDto>>> GetReview()
+    public async Task<ActionResult<IEnumerable<ReviewDto>>> GetReview(CancellationToken cancellationToken)
     {
-        List<ReviewDto> reviews = await _context.Reviews
-            .AsNoTracking()
-            .Select(review => new ReviewDto
-            {
-                Id = review.Id,
-                ReviewerName = review.ReviewerName,
-                Comment = review.Comment,
-                Rating = review.Rating
-            })
-            .ToListAsync();
+        IReadOnlyList<ReviewDto> reviews = await _serviceManager.Reviews.GetReviewsAsync(cancellationToken);
 
         return Ok(reviews);
     }
@@ -42,7 +35,7 @@ public class ReviewsController : ControllerBase
     [HttpGet("/api/movies/{movieId:guid}/reviews")]
     public async Task<ActionResult<IReadOnlyList<ReviewDto>>> GetMovieReviews([FromRoute] Guid movieId, CancellationToken cancellationToken)
     {
-        IReadOnlyList<ReviewDto>? reviews = await _reviewService.GetReviewsByMovieIdAsync(movieId, cancellationToken);
+        IReadOnlyList<ReviewDto>? reviews = await _serviceManager.Reviews.GetReviewsByMovieIdAsync(movieId, cancellationToken);
 
         if (reviews is null)
         {
@@ -54,51 +47,33 @@ public class ReviewsController : ControllerBase
 
     //POST /api/movies/{movieId}/reviews
     [HttpPost("/api/movies/{movieId:guid}/reviews")]
-    public async Task<ActionResult<ReviewDto>> PostReview([FromRoute] Guid movieId, [FromBody] ReviewCreateDto reviewCreateDto)
+    public async Task<ActionResult<ReviewDto>> PostReview([FromRoute] Guid movieId, [FromBody] ReviewCreateDto reviewCreateDto, CancellationToken cancellationToken = default)
     {
-        MovieEntity? movie = await _context.Movie
-            .Include(movie => movie.Reviews)
-            .FirstOrDefaultAsync(movie => movie.Id == movieId);
+        ReviewDto? reviewDto = await _serviceManager.Reviews.CreateReviewAsync(
+        movieId,
+        reviewCreateDto,
+        cancellationToken
+    );
 
-        if (movie is null)
+        if (reviewDto is null)
         {
             return NotFound();
         }
 
-        var review = new Review(
-            reviewCreateDto.ReviewerName,
-            reviewCreateDto.Comment,
-            reviewCreateDto.Rating
-        );
-
-        movie.Reviews.Add(review);
-        _context.Set<Review>().Add(review);
-        await _context.SaveChangesAsync();
-
-        ReviewDto reviewDto = new()
-        {
-            Id = review.Id,
-            ReviewerName = review.ReviewerName,
-            Comment = review.Comment,
-            Rating = review.Rating
-        };
-
-        return Created($"/api/reviews/{review.Id}", reviewDto);
+        return Created($"/api/reviews/{reviewDto.Id}", reviewDto);
     }
 
     // DELETE: api/Reviews/5
     [HttpDelete("{id:guid}")]
-    public async Task<IActionResult> DeleteMovie([FromRoute] System.Guid id)
+    public async Task<IActionResult> DeleteMovie([FromRoute] System.Guid id, CancellationToken cancellationToken = default)
     {
-        var review = await _context.Reviews.FindAsync(id);
-        if (review == null)
-        {
-            return NotFound();
+        bool isDelted = await _serviceManager.Reviews.DeleteReviewAsync(id, cancellationToken);
+
+        if (!isDelted)
+        {     
+            return NoContent();
         }
 
-        _context.Reviews.Remove(review);
-        await _context.SaveChangesAsync();
-
-        return NoContent();
+        return NotFound();
     }
 }

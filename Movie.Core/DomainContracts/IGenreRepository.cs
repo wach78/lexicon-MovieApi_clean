@@ -8,7 +8,7 @@ namespace Movie.Core.DomainContracts;
 public interface IGenreRepository
 {
     Task<IEnumerable<Genre>> GetAllAsync();
-    Task<Genre?> GetAsync(Guid id);
+    Task<Genre?> GetAsync(Guid id, CancellationToken cancellationToken = default);
     Task<bool> AnyAsync(Guid id);
     void Add(Genre genre);
     void Update(Genre genre);

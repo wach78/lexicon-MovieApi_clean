@@ -24,11 +24,11 @@ public sealed class GenreRepository : IGenreRepository
             .ToListAsync();
     }
 
-    public async Task<Genre?> GetAsync(Guid id)
+    public async Task<Genre?> GetAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _context
             .Set<Genre>()
-            .FirstOrDefaultAsync(genre => genre.Id == id);
+            .FirstOrDefaultAsync(genre => genre.Id == id, cancellationToken);
     }
 
     public async Task<bool> AnyAsync(Guid id)

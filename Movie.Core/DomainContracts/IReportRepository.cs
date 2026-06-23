@@ -1,15 +1,16 @@
 using Movie.Core.DTOs.Actor;
 using Movie.Core.DTOs.Movie;
 using Movie.Core.DTOs.Report;
-namespace MovieApi.Interfaces.Service;
 
-public interface IReportsService
+namespace Movie.Core.DomainContracts;
+
+public interface IReportRepository
 {
     Task<IReadOnlyList<MovieAverageRatingDto>> GetAverageRatingsByGenreAsync(
         CancellationToken cancellationToken = default
     );
 
-    Task<IReadOnlyList<TopMoviesPerGenreDto>> GetTopFiveMoviesPerGenreAsync(
+    Task<IReadOnlyList<TopMoviesPerGenreDto>> GetTopMoviesPerGenreAsync(
         CancellationToken cancellationToken = default
     );
 

@@ -13,7 +13,8 @@ public sealed class UnitOfWork : IUnitOfWork
         IReviewRepository reviews,
         IActorRepository actors,
         IMovieDetailsRepository movieDetails,
-        IGenreRepository genres)
+        IGenreRepository genres,
+        IReportRepository reports)
     {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(movies);
@@ -29,6 +30,7 @@ public sealed class UnitOfWork : IUnitOfWork
         Actors = actors;
         MovieDetails = movieDetails;
         Genres = genres;
+        Reports = reports;
     }
 
     public IMovieRepository Movies { get; }
@@ -41,8 +43,10 @@ public sealed class UnitOfWork : IUnitOfWork
 
     public IGenreRepository Genres { get; }
 
-    public async Task CompleteAsync()
+    public IReportRepository Reports { get; }
+
+    public async Task CompleteAsync(CancellationToken cancellationToken = default)
     {
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(cancellationToken);
     }
 }
