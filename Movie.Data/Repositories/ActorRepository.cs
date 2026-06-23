@@ -25,26 +25,26 @@ public class ActorRepository: IActorRepository
         _context.Set<Actor>().Add(actor);
     }
 
-   async Task<bool> IActorRepository.AnyAsync(Guid id)
+   async Task<bool> IActorRepository.AnyAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _context
            .Set<Actor>()
-           .AnyAsync(actor => actor.Id == id);
+           .AnyAsync(actor => actor.Id == id, cancellationToken);
     }
 
-    async Task<IEnumerable<Actor>> IActorRepository.GetAllAsync()
+    async Task<IEnumerable<Actor>> IActorRepository.GetAllAsync(CancellationToken cancellationToken = default)
     {
         return await _context
             .Set<Actor>()
             .AsNoTracking()
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
     }
 
-    async Task<Actor?> IActorRepository.GetAsync(Guid id)
+    async Task<Actor?> IActorRepository.GetAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _context
           .Set<Actor>()
-          .FirstOrDefaultAsync(movie => movie.Id == id);
+          .FirstOrDefaultAsync(movie => movie.Id == id, cancellationToken);
     }
 
     async void IActorRepository.Remove(Actor actor)

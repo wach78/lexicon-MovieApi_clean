@@ -11,5 +11,6 @@ public interface IUnitOfWork
     IActorRepository Actors { get; }
     IMovieDetailsRepository MovieDetails { get; }
     IGenreRepository Genres { get; }
+    IReportRepository Reports { get; }
     Task CompleteAsync(CancellationToken cancellationToken = default);
 }

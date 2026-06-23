@@ -1,140 +1,79 @@
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Movie.Core.DTOs.Actor;
 using Movie.Core.DTOs.Movie;
 using Movie.Core.DTOs.Report;
-using Movie.Core.Entities;
+using Movie.Service.Contracts.Interfaces;
 
 namespace MovieApi.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class ReportsController : ControllerBase
+public sealed class ReportsController : ControllerBase
 {
-    private readonly MovieApiContext _context;
-    public ReportsController(MovieApiContext context)
+    private readonly IReportsService _reportsService;
+
+    public ReportsController(IReportsService reportsService)
     {
-        _context = context;
+        ArgumentNullException.ThrowIfNull(reportsService);
+
+        _reportsService = reportsService;
     }
 
-    //GET /api/reports/movies/average-ratings
-
+    // GET /api/reports/movies/average-ratings
     [HttpGet("movies/average-ratings")]
-    public async Task<ActionResult<MovieAverageRatingDto>> GetAverageRatingGenre()
+    public async Task<
+        ActionResult<IReadOnlyList<MovieAverageRatingDto>>>
+        GetAverageRatingGenre(
+            CancellationToken cancellationToken = default)
     {
-        List<MovieAverageRatingDto> averageRatings = await _context.Movie
-           .AsNoTracking()
-           .Where(movie => movie.Reviews.Any())
-           .GroupBy(movie => new
-           {
-               movie.GenreId,
-               GenreName = movie.Genre != null ? movie.Genre.Name : "No genre"
-           })
-           .Select(group => new MovieAverageRatingDto
-           {
-               GenreId = group.Key.GenreId,
-               GenreName = group.Key.GenreName,
-               AverageRating = Math.Round(
-                group
-                    .SelectMany(movie => movie.Reviews)
-                    .Average(review => review.Rating),
-                2),
-
-               ReviewCount = group
-                   .SelectMany(movie => movie.Reviews)
-                   .Count()
-           })
-           .ToListAsync();
+        IReadOnlyList<MovieAverageRatingDto> averageRatings =
+            await _reportsService.GetAverageRatingsByGenreAsync(
+                cancellationToken
+            );
 
         return Ok(averageRatings);
     }
 
-    //GET /api/reports/movies/top5pergenre
+    // GET /api/reports/movies/top5pergenre
     [HttpGet("movies/top5pergenre")]
-    public async Task<ActionResult<IEnumerable<TopMoviesPerGenreDto>>> GetTop5MoviesPerGenre()
+    public async Task<
+        ActionResult<IReadOnlyList<TopMoviesPerGenreDto>>>
+        GetTop5MoviesPerGenre(
+            CancellationToken cancellationToken = default)
     {
-        var movieRatings = await _context.Movie
-            .AsNoTracking()
-            .Where(movie => movie.Reviews.Any())
-            .Select(movie => new
-            {
-                MovieId = movie.Id,
-                movie.Title,
-                movie.Year,
-                movie.GenreId,
-                GenreName = movie.Genre != null ? movie.Genre.Name : "No genre",
-                AverageRating = movie.Reviews.Average(review => review.Rating),
-                ReviewCount = movie.Reviews.Count()
-            })
-            .ToListAsync();
+        IReadOnlyList<TopMoviesPerGenreDto> movies =
+            await _reportsService.GetTopMoviesPerGenreAsync(
+                cancellationToken
+            );
 
-        List<TopMoviesPerGenreDto> top5PerGenre = movieRatings
-            .GroupBy(movie => new
-            {
-                movie.GenreId,
-                movie.GenreName
-            })
-            .Select(group => new TopMoviesPerGenreDto
-            {
-                GenreId = group.Key.GenreId,
-                GenreName = group.Key.GenreName,
-                Movies = group
-                    .OrderByDescending(movie => movie.AverageRating)
-                    .ThenByDescending(movie => movie.ReviewCount)
-                    .Take(5)
-                    .Select(movie => new TopRatedMovieDto
-                    {
-                        MovieId = movie.MovieId,
-                        Title = movie.Title,
-                        Year = movie.Year,
-                        AverageRating = Math.Round(movie.AverageRating, 2),
-                        ReviewCount = movie.ReviewCount
-                    })
-                    .ToList()
-            })
-            .OrderBy(result => result.GenreName)
-            .ToList();
-
-        return Ok(top5PerGenre);
+        return Ok(movies);
     }
 
-    //GET /api/reports/actors/most-active
+    // GET /api/reports/actors/most-active
     [HttpGet("actors/most-active")]
-    public async Task<ActionResult<IReadOnlyList<MostActiveActorDto>>> GetMostActiveActors()
+    public async Task<
+        ActionResult<IReadOnlyList<MostActiveActorDto>>>
+        GetMostActiveActors(
+            CancellationToken cancellationToken = default)
     {
-        List<MostActiveActorDto> actors = await _context.Actors
-         .AsNoTracking()
-         .Where(actor => actor.Movies.Any())
-         .Select(actor => new MostActiveActorDto
-         {
-             ActorId = actor.Id,
-             Name = actor.Name,
-             MovieCount = actor.Movies.Count
-         })
-         .OrderByDescending(actor => actor.MovieCount)
-         .ThenBy(actor => actor.Name)
-         .ToListAsync();
+        IReadOnlyList<MostActiveActorDto> actors =
+            await _reportsService.GetMostActiveActorsAsync(
+                cancellationToken
+            );
 
         return Ok(actors);
     }
 
-    //GET /api/reports/movies/with-most-reviews
+    // GET /api/reports/movies/with-most-reviews
     [HttpGet("movies/with-most-reviews")]
-    public async Task<ActionResult<MovieWithMostReviewsDto>> GetMovieWithMostReviews()
+    public async Task<ActionResult<MovieWithMostReviewsDto>>
+        GetMovieWithMostReviews(
+            CancellationToken cancellationToken = default)
     {
-        MovieWithMostReviewsDto? movie = await _context.Movie
-            .AsNoTracking()
-            .Where(movie => movie.Reviews.Any())
-            .Select(movie => new MovieWithMostReviewsDto
-            {
-                MovieId = movie.Id,
-                Title = movie.Title,
-                ReviewCount = movie.Reviews.Count
-            })
-            .OrderByDescending(movie => movie.ReviewCount)
-            .ThenBy(movie => movie.Title)
-            .FirstOrDefaultAsync();
+        MovieWithMostReviewsDto? movie =
+            await _reportsService.GetMovieWithMostReviewsAsync(
+                cancellationToken
+            );
 
         if (movie is null)
         {
@@ -144,30 +83,18 @@ public class ReportsController : ControllerBase
         return Ok(movie);
     }
 
-    //GET /api/reports/genres/popular
-    [HttpGet("/reports/genres/popular")]
-    public async Task<ActionResult<IReadOnlyList<PopularGenreDto>>> GetPopularGenre()
+    // GET /api/reports/genres/popular
+    [HttpGet("genres/popular")]
+    public async Task<
+        ActionResult<IReadOnlyList<PopularGenreDto>>>
+        GetPopularGenre(
+            CancellationToken cancellationToken = default)
     {
-        List<PopularGenreDto> popularGenres = await _context.Movie
-         .AsNoTracking()
-         .Where(movie => movie.GenreId != null)
-         .GroupBy(movie => new
-         {
-             movie.GenreId,
-             GenreName = movie.Genre != null
-                 ? movie.Genre.Name
-                 : "Unknown"
-         })
-         .Select(group => new PopularGenreDto
-         {
-             GenreId = group.Key.GenreId,
-             GenreName = group.Key.GenreName,
-             MovieCount = group.Count()
-         })
-         .OrderByDescending(genre => genre.MovieCount)
-         .ThenBy(genre => genre.GenreName)
-         .ToListAsync();
+        IReadOnlyList<PopularGenreDto> genres =
+            await _reportsService.GetPopularGenresAsync(
+                cancellationToken
+            );
 
-        return Ok(popularGenres);
+        return Ok(genres);
     }
 }

@@ -1,93 +1,77 @@
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Movie.Core.DTOs.Actor;
-using Movie.Core.DTOs.Movie;
-using Movie.Core.Entities;
-using MovieEntity = Movie.Core.Entities.Movie;
+using Movie.Service.Contracts.Interfaces;
+using Movie.Service.Contracts.Results;
 
 namespace MovieApi.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class ActorsController : ControllerBase
+public sealed class ActorsController : ControllerBase
 {
-    private readonly MovieApiContext _context;
-    public ActorsController(MovieApiContext context)
+    private readonly IActorService _actorService;
+
+    public ActorsController(IActorService actorService)
     {
-        _context = context;
+        ArgumentNullException.ThrowIfNull(actorService);
+
+        _actorService = actorService;
     }
 
-    // POST: api/movies/{movieId}/actors/{actorId}
+    // POST /api/movies/{movieId}/actors/{actorId}
     [HttpPost("/api/movies/{movieId:guid}/actors/{actorId:guid}")]
     public async Task<IActionResult> AddActorToMovie(
         [FromRoute] Guid movieId,
-        [FromRoute] Guid actorId)
+        [FromRoute] Guid actorId,
+        CancellationToken cancellationToken = default)
     {
-        MovieEntity? movie = await _context.Movie
-            .Include(movie => movie.Actors)
-            .FirstOrDefaultAsync(movie => movie.Id == movieId);
+        AddActorToMovieResult result =
+            await _actorService.AddActorToMovieAsync(
+                movieId,
+                actorId,
+                cancellationToken
+            );
 
-        if (movie is null)
+        return result switch
         {
-            return NotFound("Movie was not found.");
-        }
+            AddActorToMovieResult.Added => NoContent(),
 
-        Actor? actor = await _context.Actors
-            .FirstOrDefaultAsync(actor => actor.Id == actorId);
+            AddActorToMovieResult.MovieNotFound =>
+                NotFound("Movie was not found."),
 
-        if (actor is null)
-        {
-            return NotFound("Actor was not found.");
-        }
+            AddActorToMovieResult.ActorNotFound =>
+                NotFound("Actor was not found."),
 
-        bool actorAlreadyAdded = movie.Actors.Any(existingActor => existingActor.Id == actorId);
+            AddActorToMovieResult.ActorAlreadyAdded =>
+                BadRequest("Actor is already added to this movie."),
 
-        if (actorAlreadyAdded)
-        {
-            return BadRequest("Actor is already added to this movie.");
-        }
-
-        movie.Actors.Add(actor);
-
-        await _context.SaveChangesAsync();
-
-        return NoContent();
+            _ => StatusCode(StatusCodes.Status500InternalServerError)
+        };
     }
 
-    // GET: api/Actor
+    // GET /api/actors
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<ActorDto>>> GetActor()
+    public async Task<ActionResult<IReadOnlyList<ActorDto>>> GetActors(
+        CancellationToken cancellationToken = default)
     {
-        List<ActorDto> actors = await _context.Actors
-            .AsNoTracking()
-            .Select(actor => new ActorDto
-            {
-                Id = actor.Id,
-                Name = actor.Name,
-                BirthYear = actor.BirthYear,
-            })
-            .ToListAsync();
+        IReadOnlyList<ActorDto> actors =
+            await _actorService.GetActorsAsync(cancellationToken);
 
         return Ok(actors);
     }
 
-    // GET: api/Actor/5
+    // GET /api/actors/{id}
     [HttpGet("{id:guid}")]
-    public async Task<ActionResult<ActorDto>> GetActor([FromRoute] Guid id)
+    public async Task<ActionResult<ActorDto>> GetActor(
+        [FromRoute] Guid id,
+        CancellationToken cancellationToken = default)
     {
-        ActorDto? actor = await _context.Actors
-            .AsNoTracking()
-            .Where(actor => actor.Id == id)
-            .Select(actor => new ActorDto
-            {
-                Id = actor.Id,
-                Name = actor.Name,
-                BirthYear = actor.BirthYear,
-            })
-            .FirstOrDefaultAsync();
+        ActorDto? actor = await _actorService.GetActorByIdAsync(
+            id,
+            cancellationToken
+        );
 
-        if (actor == null)
+        if (actor is null)
         {
             return NotFound();
         }
@@ -95,51 +79,46 @@ public class ActorsController : ControllerBase
         return Ok(actor);
     }
 
-    // POST: api/Actor
-    // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+    // POST /api/actors
     [HttpPost]
-    public async Task<ActionResult<ActorDto>> PostActor([FromBody] ActorCreateDto actorCreateDto)
+    public async Task<ActionResult<ActorDto>> PostActor(
+        [FromBody] ActorCreateDto actorCreateDto,
+        CancellationToken cancellationToken = default)
     {
-        Actor actor = new(
-            actorCreateDto.Name,
-            actorCreateDto.BirthYear
-
+        ActorDto actor = await _actorService.CreateActorAsync(
+            actorCreateDto,
+            cancellationToken
         );
 
-        _context.Actors.Add(actor);
-        await _context.SaveChangesAsync();
-
-        ActorDto actorDto = new()
-        {
-            Name = actorCreateDto.Name,
-            BirthYear = actorCreateDto.BirthYear,
-        };
-
-        return CreatedAtAction(nameof(GetActor), new { id = actor.Id }, actorDto);
+        return CreatedAtAction(
+            nameof(GetActor),
+            new { id = actor.Id },
+            actor
+        );
     }
 
-    // PUT: api/Actor/5
+    // PUT /api/actors/{id}
     [HttpPut("{id:guid}")]
-    public async Task<IActionResult> PutMovie([FromRoute] Guid id, [FromBody] ActorUpdateDto actorUpdateDto)
+    public async Task<IActionResult> PutActor(
+        [FromRoute] Guid id,
+        [FromBody] ActorUpdateDto actorUpdateDto,
+        CancellationToken cancellationToken = default)
     {
         if (id != actorUpdateDto.Id)
         {
             return BadRequest();
         }
 
-        Actor? actor = await _context.Actors.FirstOrDefaultAsync(actor => actor.Id == id);
+        bool isUpdated = await _actorService.UpdateActorAsync(
+            id,
+            actorUpdateDto,
+            cancellationToken
+        );
 
-        if (actor == null)
+        if (!isUpdated)
         {
             return NotFound();
         }
-
-        actor.Update(
-            actorUpdateDto.Name,
-            actorUpdateDto.BirthYear
-        );
-
-        await _context.SaveChangesAsync();
 
         return NoContent();
     }

@@ -121,4 +121,15 @@ public sealed class MovieRepository : IMovieRepository
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<MovieEntity?> GetWithActorsAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await _context
+            .Set<MovieEntity>()
+            .Include(movie => movie.Actors)
+            .FirstOrDefaultAsync(
+                movie => movie.Id == id,
+                cancellationToken
+            );
+    }
+
 }

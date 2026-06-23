@@ -15,4 +15,5 @@ public interface IMovieRepository
     Task<MovieEntity?> GetWithGenreAsync(Guid id, CancellationToken cancellationToken = default);
     Task<MovieEntity?> GetWithDetailsAsync(Guid id, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<MovieEntity>> GetFilteredAsync(string? genre, int? year, string? actor, CancellationToken cancellationToken = default);
+    Task<MovieEntity?> GetWithActorsAsync(Guid id, CancellationToken cancellationToken = default);
 }

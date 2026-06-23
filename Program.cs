@@ -21,10 +21,10 @@ public class Program
 
         builder.Services.AddScoped<IMovieApiContext>(serviceProvider => serviceProvider.GetRequiredService<MovieApiContext>());
         builder.Services.AddScoped<IMovieService, MovieService>();
-       // builder.Services.AddScoped<IActorService, ActorService>();
+        builder.Services.AddScoped<IActorService, ActorService>();
         builder.Services.AddScoped<IReviewService, ReviewService>();
         builder.Services.AddScoped<IGenreService, GenreService>();
-       // builder.Services.AddScoped<IReportsService, ReportsService>();
+        builder.Services.AddScoped<IReportsService, ReportsService>();
 
         builder.Services.AddScoped<IServiceManager, ServiceManager>();
 
