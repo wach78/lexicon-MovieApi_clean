@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Movie.Core.DTOs.Actor;
 using Movie.Service.Contracts.Interfaces;
 using Movie.Service.Contracts.Results;
+using Movie.Services;
 
 namespace MovieApi.Controllers;
 
@@ -9,13 +10,13 @@ namespace MovieApi.Controllers;
 [ApiController]
 public sealed class ActorsController : ControllerBase
 {
-    private readonly IActorService _actorService;
+    private readonly IServiceManager _serviceManager;
 
-    public ActorsController(IActorService actorService)
+    public ActorsController(IServiceManager serviceManager)
     {
-        ArgumentNullException.ThrowIfNull(actorService);
+        ArgumentNullException.ThrowIfNull(serviceManager);
 
-        _actorService = actorService;
+        _serviceManager = serviceManager;
     }
 
     // POST /api/movies/{movieId}/actors/{actorId}
@@ -26,7 +27,7 @@ public sealed class ActorsController : ControllerBase
         CancellationToken cancellationToken = default)
     {
         AddActorToMovieResult result =
-            await _actorService.AddActorToMovieAsync(
+            await _serviceManager.Actors.AddActorToMovieAsync(
                 movieId,
                 actorId,
                 cancellationToken
@@ -55,7 +56,7 @@ public sealed class ActorsController : ControllerBase
         CancellationToken cancellationToken = default)
     {
         IReadOnlyList<ActorDto> actors =
-            await _actorService.GetActorsAsync(cancellationToken);
+            await _serviceManager.Actors.GetActorsAsync(cancellationToken);
 
         return Ok(actors);
     }
@@ -66,7 +67,7 @@ public sealed class ActorsController : ControllerBase
         [FromRoute] Guid id,
         CancellationToken cancellationToken = default)
     {
-        ActorDto? actor = await _actorService.GetActorByIdAsync(
+        ActorDto? actor = await _serviceManager.Actors.GetActorByIdAsync(
             id,
             cancellationToken
         );
@@ -85,7 +86,7 @@ public sealed class ActorsController : ControllerBase
         [FromBody] ActorCreateDto actorCreateDto,
         CancellationToken cancellationToken = default)
     {
-        ActorDto actor = await _actorService.CreateActorAsync(
+        ActorDto actor = await _serviceManager.Actors.CreateActorAsync(
             actorCreateDto,
             cancellationToken
         );
@@ -109,7 +110,7 @@ public sealed class ActorsController : ControllerBase
             return BadRequest();
         }
 
-        bool isUpdated = await _actorService.UpdateActorAsync(
+        bool isUpdated = await _serviceManager.Actors.UpdateActorAsync(
             id,
             actorUpdateDto,
             cancellationToken

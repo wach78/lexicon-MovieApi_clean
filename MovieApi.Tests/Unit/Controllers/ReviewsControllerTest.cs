@@ -6,29 +6,30 @@ using Microsoft.EntityFrameworkCore;
 using Moq;
 using MovieApi.Controllers;
 using Movie.Core.DTOs.Review;
-using MovieApi.Interfaces.Service;
-using MovieApi.Services;
-
+using Movie.Service.Contracts.Interfaces;
 namespace MovieApi.Tests.Unit.Controllers;
 
 public class ReviewsControllerTest
 {
     private readonly Mock<IReviewService> _reviewServiceMock;
-    private readonly Mock<MovieApiContext> _contextMock;
+    private readonly Mock<IServiceManager> _serviceManagerMock;
     private readonly ReviewsController _controller;
 
     public ReviewsControllerTest()
     {
-        DbContextOptions<MovieApiContext> options =
-            new DbContextOptionsBuilder<MovieApiContext>()
-                .Options;
+        _reviewServiceMock =
+            new Mock<IReviewService>(MockBehavior.Strict);
 
-        _contextMock = new Mock<MovieApiContext>(options);
-        _reviewServiceMock = new Mock<IReviewService>(MockBehavior.Strict);
+        _serviceManagerMock =
+            new Mock<IServiceManager>(MockBehavior.Strict);
+
+        _serviceManagerMock
+            .SetupGet(serviceManager => serviceManager.Reviews)
+            .Returns(_reviewServiceMock.Object);
 
         _controller = new ReviewsController(
-            _contextMock.Object,
-            _reviewServiceMock.Object);
+            _serviceManagerMock.Object
+        );
     }
 
     [Fact]

@@ -13,17 +13,20 @@ namespace MovieApi.Controllers;
 [ApiController]
 public class ReviewsController : ControllerBase
 {
-    private readonly IReviewService _reviewService;
-    public ReviewsController(IReviewService reviewService)
+    private readonly IServiceManager _serviceManager;
+
+    public ReviewsController(IServiceManager serviceManager)
     {
-        _reviewService = reviewService;
+        ArgumentNullException.ThrowIfNull(serviceManager);
+
+        _serviceManager = serviceManager;
     }
 
     // GET: api/Reviws
     [HttpGet]
     public async Task<ActionResult<IEnumerable<ReviewDto>>> GetReview(CancellationToken cancellationToken)
     {
-        IReadOnlyList<ReviewDto> reviews = await _reviewService.GetReviewsAsync(cancellationToken);
+        IReadOnlyList<ReviewDto> reviews = await _serviceManager.Reviews.GetReviewsAsync(cancellationToken);
 
         return Ok(reviews);
     }
@@ -32,7 +35,7 @@ public class ReviewsController : ControllerBase
     [HttpGet("/api/movies/{movieId:guid}/reviews")]
     public async Task<ActionResult<IReadOnlyList<ReviewDto>>> GetMovieReviews([FromRoute] Guid movieId, CancellationToken cancellationToken)
     {
-        IReadOnlyList<ReviewDto>? reviews = await _reviewService.GetReviewsByMovieIdAsync(movieId, cancellationToken);
+        IReadOnlyList<ReviewDto>? reviews = await _serviceManager.Reviews.GetReviewsByMovieIdAsync(movieId, cancellationToken);
 
         if (reviews is null)
         {
@@ -46,7 +49,7 @@ public class ReviewsController : ControllerBase
     [HttpPost("/api/movies/{movieId:guid}/reviews")]
     public async Task<ActionResult<ReviewDto>> PostReview([FromRoute] Guid movieId, [FromBody] ReviewCreateDto reviewCreateDto, CancellationToken cancellationToken = default)
     {
-        ReviewDto? reviewDto = await _reviewService.CreateReviewAsync(
+        ReviewDto? reviewDto = await _serviceManager.Reviews.CreateReviewAsync(
         movieId,
         reviewCreateDto,
         cancellationToken
@@ -64,7 +67,7 @@ public class ReviewsController : ControllerBase
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> DeleteMovie([FromRoute] System.Guid id, CancellationToken cancellationToken = default)
     {
-        bool isDelted = await _reviewService.DeleteReviewAsync(id, cancellationToken);
+        bool isDelted = await _serviceManager.Reviews.DeleteReviewAsync(id, cancellationToken);
 
         if (!isDelted)
         {     

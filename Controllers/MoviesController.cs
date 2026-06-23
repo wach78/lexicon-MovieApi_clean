@@ -4,9 +4,10 @@ using Microsoft.IdentityModel.Tokens;
 using Movie.Core.DTOs.Actor;
 using Movie.Core.DTOs.Movie;
 using Movie.Core.DTOs.Review;
-using Movie.Service.Contracts.Results;
 using Movie.Core.Entities;
 using Movie.Service.Contracts.Interfaces;
+using Movie.Service.Contracts.Results;
+using Movie.Services;
 
 namespace MovieApi.Controllers;
 
@@ -14,10 +15,13 @@ namespace MovieApi.Controllers;
 [ApiController]
 public class MoviesController : ControllerBase
 {
-    private readonly IMovieService _movieService;
-    public MoviesController(IMovieService movieService)
+    private readonly IServiceManager _serviceManager;
+
+    public MoviesController(IServiceManager serviceManager)
     {
-        _movieService = movieService;
+        ArgumentNullException.ThrowIfNull(serviceManager);
+
+        _serviceManager = serviceManager;
     }
 
     // GET: api/Movie
@@ -29,7 +33,7 @@ public class MoviesController : ControllerBase
         CancellationToken cancellationToken
         )
     {
-        IReadOnlyList<MovieDto> movies = await _movieService.GetMoviesAsync(
+        IReadOnlyList<MovieDto> movies = await _serviceManager.Movies.GetMoviesAsync(
         genre,
         year,
         actor,
@@ -42,7 +46,7 @@ public class MoviesController : ControllerBase
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<MovieDto>> GetMovie([FromRoute] Guid id)
     {
-        MovieDto? movie = await _movieService.GetMovieByIdAsync(id);
+        MovieDto? movie = await _serviceManager.Movies.GetMovieByIdAsync(id);
 
         if (movie is null)
         {
@@ -55,7 +59,7 @@ public class MoviesController : ControllerBase
     [HttpGet("{id:guid}/details")]
     public async Task<ActionResult<MovieDetailDto>> GetMovieDetails([FromRoute] Guid id, CancellationToken cancellationToken)
     {
-        MovieDetailDto? movie = await _movieService.GetMovieDetailsAsync(id, cancellationToken);
+        MovieDetailDto? movie = await _serviceManager.Movies.GetMovieDetailsAsync(id, cancellationToken);
 
         if (movie is null)
         {
@@ -75,7 +79,7 @@ public class MoviesController : ControllerBase
             return BadRequest("Route id does not match body id.");
         }
 
-        UpdateMovieResult updateMovieResult = await _movieService.UpdateMovieAsync(id, movieUpdateDto, cancellationToken);
+        UpdateMovieResult updateMovieResult = await _serviceManager.Movies.UpdateMovieAsync(id, movieUpdateDto, cancellationToken);
 
         return updateMovieResult switch
         {
@@ -97,7 +101,7 @@ public class MoviesController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<MovieDto>> PostMovie([FromBody] MovieCreateDto movieCreateDto, CancellationToken cancellationToken)
     {
-        MovieDto? movieDto = await _movieService.CreateMovieAsync(
+        MovieDto? movieDto = await _serviceManager.Movies.CreateMovieAsync(
             movieCreateDto,
             cancellationToken
         );
@@ -118,7 +122,7 @@ public class MoviesController : ControllerBase
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> DeleteMovie([FromRoute] Guid id, CancellationToken cancellationToken)
     {
-        bool isDeleted = await _movieService.DeleteMovieAsync(id, cancellationToken);
+        bool isDeleted = await _serviceManager.Movies.DeleteMovieAsync(id, cancellationToken);
 
         if (!isDeleted)
         {

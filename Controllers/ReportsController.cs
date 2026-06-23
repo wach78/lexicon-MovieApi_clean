@@ -10,13 +10,13 @@ namespace MovieApi.Controllers;
 [ApiController]
 public sealed class ReportsController : ControllerBase
 {
-    private readonly IReportsService _reportsService;
+    private readonly IServiceManager _serviceManager;
 
-    public ReportsController(IReportsService reportsService)
+    public ReportsController(IServiceManager serviceManager)
     {
-        ArgumentNullException.ThrowIfNull(reportsService);
+        ArgumentNullException.ThrowIfNull(serviceManager);
 
-        _reportsService = reportsService;
+        _serviceManager = serviceManager;
     }
 
     // GET /api/reports/movies/average-ratings
@@ -27,7 +27,7 @@ public sealed class ReportsController : ControllerBase
             CancellationToken cancellationToken = default)
     {
         IReadOnlyList<MovieAverageRatingDto> averageRatings =
-            await _reportsService.GetAverageRatingsByGenreAsync(
+            await _serviceManager.Reports.GetAverageRatingsByGenreAsync(
                 cancellationToken
             );
 
@@ -42,7 +42,7 @@ public sealed class ReportsController : ControllerBase
             CancellationToken cancellationToken = default)
     {
         IReadOnlyList<TopMoviesPerGenreDto> movies =
-            await _reportsService.GetTopMoviesPerGenreAsync(
+            await _serviceManager.Reports.GetTopMoviesPerGenreAsync(
                 cancellationToken
             );
 
@@ -57,7 +57,7 @@ public sealed class ReportsController : ControllerBase
             CancellationToken cancellationToken = default)
     {
         IReadOnlyList<MostActiveActorDto> actors =
-            await _reportsService.GetMostActiveActorsAsync(
+            await _serviceManager.Reports.GetMostActiveActorsAsync(
                 cancellationToken
             );
 
@@ -71,7 +71,7 @@ public sealed class ReportsController : ControllerBase
             CancellationToken cancellationToken = default)
     {
         MovieWithMostReviewsDto? movie =
-            await _reportsService.GetMovieWithMostReviewsAsync(
+            await _serviceManager.Reports.GetMovieWithMostReviewsAsync(
                 cancellationToken
             );
 
@@ -91,7 +91,7 @@ public sealed class ReportsController : ControllerBase
             CancellationToken cancellationToken = default)
     {
         IReadOnlyList<PopularGenreDto> genres =
-            await _reportsService.GetPopularGenresAsync(
+            await _serviceManager.Reports.GetPopularGenresAsync(
                 cancellationToken
             );
 

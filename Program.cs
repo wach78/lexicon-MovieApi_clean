@@ -33,6 +33,7 @@ public class Program
         builder.Services.AddScoped<IActorRepository, ActorRepository>();
         builder.Services.AddScoped<IMovieDetailsRepository, MovieDetailsRepository>();
         builder.Services.AddScoped<IGenreRepository, GenreRepository>();
+        builder.Services.AddScoped<IReportRepository, ReportRepository>();
         builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         // Add services to the container.
