@@ -7,6 +7,7 @@ using MovieApi.Extensions;
 using Movie.Service.Contracts.Interfaces;
 using Movie.Services;
 using Scalar.AspNetCore;
+using Movie.Presentation.Controllers;
 
 namespace MovieApi;
 
@@ -38,7 +39,9 @@ public class Program
 
         // Add services to the container.
 
-        builder.Services.AddControllers();
+        builder.Services
+            .AddControllers()
+            .AddApplicationPart(typeof(MoviesController).Assembly);
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddOpenApi();
 

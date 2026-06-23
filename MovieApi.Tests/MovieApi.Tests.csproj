@@ -18,6 +18,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Movie.Core\Movie.Core.csproj" />
     <ProjectReference Include="..\Movie.Data\Movie.Data.csproj" />
+    <ProjectReference Include="..\Movie.Presentation\Movie.Presentation.csproj" />
     <ProjectReference Include="..\Movie.Service.Contracts\Movie.Service.Contracts.csproj" />
     <ProjectReference Include="..\Movie.Services\Movie.Services.csproj" />
     <ProjectReference Include="..\MovieApi.csproj" />
