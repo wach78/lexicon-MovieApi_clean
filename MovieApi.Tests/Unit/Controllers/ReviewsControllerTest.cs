@@ -4,7 +4,7 @@ using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Moq;
-using MovieApi.Controllers;
+using Movie.Presentation.Controllers;
 using Movie.Core.DTOs.Review;
 using Movie.Service.Contracts.Interfaces;
 namespace MovieApi.Tests.Unit.Controllers;

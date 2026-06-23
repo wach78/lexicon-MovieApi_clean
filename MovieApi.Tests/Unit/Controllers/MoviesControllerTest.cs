@@ -1,11 +1,11 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
-using MovieApi.Controllers;
+using Movie.Presentation.Controllers;
 using Movie.Core.DTOs.Actor;
 using Movie.Core.DTOs.Movie;
 using Movie.Core.DTOs.Review;
-using MovieApi.Models;
+using Movie.Core.Entities;
 using Xunit;
 using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
 using Movie.Service.Contracts.Interfaces;
