@@ -63,7 +63,7 @@ public class ReviewsController : ControllerBase
 
     // DELETE: api/Reviews/5
     [HttpDelete("{id:guid}")]
-    public async Task<IActionResult> DeleteMovie([FromRoute] System.Guid id, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> DeleteReview([FromRoute] System.Guid id, CancellationToken cancellationToken = default)
     {
         bool isDelted = await _serviceManager.Reviews.DeleteReviewAsync(id, cancellationToken);
 

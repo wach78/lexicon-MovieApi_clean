@@ -92,4 +92,190 @@ public class ReviewsControllerTest
 
         _reviewServiceMock.VerifyNoOtherCalls();
     }
+
+    [Fact]
+    public async Task GetReview_WhenServiceReturnsReviews_ReturnsOkWithReviews()
+    {
+        CancellationToken cancellationToken = CancellationToken.None;
+
+        IReadOnlyList<ReviewDto> reviews =
+        [
+            new ReviewDto
+        {
+            Id = Guid.CreateVersion7(),
+            ReviewerName = "Reviewer",
+            Comment = "Good movie.",
+            Rating = 4
+        }
+        ];
+
+        _reviewServiceMock
+            .Setup(service => service.GetReviewsAsync(cancellationToken))
+            .ReturnsAsync(reviews);
+
+        ActionResult<IEnumerable<ReviewDto>> actionResult =
+            await _controller.GetReview(cancellationToken);
+
+        OkObjectResult okResult =
+            Assert.IsType<OkObjectResult>(actionResult.Result);
+
+        IReadOnlyList<ReviewDto> returnedReviews =
+            Assert.IsAssignableFrom<IReadOnlyList<ReviewDto>>(okResult.Value);
+
+        Assert.Same(reviews, returnedReviews);
+
+        _reviewServiceMock.Verify(
+            service => service.GetReviewsAsync(cancellationToken),
+            Times.Once);
+
+        _reviewServiceMock.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task PostReview_WhenServiceCreatesReview_ReturnsCreatedWithReview()
+    {
+        // Arrange
+        Guid movieId = Guid.CreateVersion7();
+        CancellationToken cancellationToken = CancellationToken.None;
+
+        ReviewCreateDto reviewCreateDto = new()
+        {
+            ReviewerName = "Reviewer",
+            Comment = "Good movie.",
+            Rating = 4
+        };
+
+        ReviewDto createdReview = new()
+        {
+            Id = Guid.CreateVersion7(),
+            ReviewerName = reviewCreateDto.ReviewerName,
+            Comment = reviewCreateDto.Comment,
+            Rating = reviewCreateDto.Rating
+        };
+
+        _reviewServiceMock
+            .Setup(service => service.CreateReviewAsync(
+                movieId,
+                reviewCreateDto,
+                cancellationToken))
+            .ReturnsAsync(createdReview);
+
+        ActionResult<ReviewDto> actionResult =
+            await _controller.PostReview(
+                movieId,
+                reviewCreateDto,
+                cancellationToken);
+
+        CreatedResult createdResult =
+            Assert.IsType<CreatedResult>(actionResult.Result);
+
+        Assert.Equal($"/api/reviews/{createdReview.Id}", createdResult.Location);
+        Assert.Same(createdReview, createdResult.Value);
+
+        _reviewServiceMock.Verify(
+            service => service.CreateReviewAsync(
+                movieId,
+                reviewCreateDto,
+                cancellationToken),
+            Times.Once);
+
+        _reviewServiceMock.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task PostReview_WhenServiceReturnsNull_ReturnsNotFound()
+    {
+        Guid movieId = Guid.CreateVersion7();
+        CancellationToken cancellationToken = CancellationToken.None;
+
+        ReviewCreateDto reviewCreateDto = new()
+        {
+            ReviewerName = "Reviewer",
+            Comment = "Good movie.",
+            Rating = 4
+        };
+
+        _reviewServiceMock
+            .Setup(service => service.CreateReviewAsync(
+                movieId,
+                reviewCreateDto,
+                cancellationToken))
+            .ReturnsAsync((ReviewDto?)null);
+
+        ActionResult<ReviewDto> actionResult =
+            await _controller.PostReview(
+                movieId,
+                reviewCreateDto,
+                cancellationToken);
+
+        Assert.IsType<NotFoundResult>(actionResult.Result);
+
+        _reviewServiceMock.Verify(
+            service => service.CreateReviewAsync(
+                movieId,
+                reviewCreateDto,
+                cancellationToken),
+            Times.Once);
+
+        _reviewServiceMock.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task DeleteReview_WhenServiceDeletesReview_ReturnsNoContent()
+    {
+        Guid reviewId = Guid.CreateVersion7();
+        CancellationToken cancellationToken = CancellationToken.None;
+
+        _reviewServiceMock
+            .Setup(service => service.DeleteReviewAsync(
+                reviewId,
+                cancellationToken))
+            .ReturnsAsync(true);
+
+        IActionResult actionResult =
+            await _controller.DeleteReview(reviewId, cancellationToken);
+
+        Assert.IsType<NoContentResult>(actionResult);
+
+        _reviewServiceMock.Verify(
+            service => service.DeleteReviewAsync(
+                reviewId,
+                cancellationToken),
+            Times.Once);
+
+        _reviewServiceMock.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task DeleteReview_WhenReviewDoesNotExist_ReturnsNotFound()
+    {
+        Guid reviewId = Guid.CreateVersion7();
+        CancellationToken cancellationToken = CancellationToken.None;
+
+        _reviewServiceMock
+            .Setup(service => service.DeleteReviewAsync(
+                reviewId,
+                cancellationToken))
+            .ReturnsAsync(false);
+
+        IActionResult actionResult =
+            await _controller.DeleteReview(reviewId, cancellationToken);
+
+        Assert.IsType<NotFoundResult>(actionResult);
+
+        _reviewServiceMock.Verify(
+            service => service.DeleteReviewAsync(
+                reviewId,
+                cancellationToken),
+            Times.Once);
+
+        _reviewServiceMock.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public void Constructor_WhenServiceManagerIsNull_ThrowsArgumentNullException()
+    {
+        Assert.Throws<ArgumentNullException>(
+            () => new ReviewsController(null!));
+    }
 }
