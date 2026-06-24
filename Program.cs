@@ -3,11 +3,11 @@ using Movie.Core.DomainContracts;
 using Movie.Data;
 using Movie.Data.Context;
 using Movie.Data.Repositories;
-using MovieApi.Extensions;
+using Movie.Presentation.Controllers;
 using Movie.Service.Contracts.Interfaces;
 using Movie.Services;
+using MovieApi.Extensions;
 using Scalar.AspNetCore;
-using Movie.Presentation.Controllers;
 
 namespace MovieApi;
 

@@ -3,9 +3,8 @@ using Movie.Core.DTOs.Actor;
 using Movie.Core.DTOs.Movie;
 using Movie.Core.DTOs.Review;
 using Movie.Core.Entities;
-using Movie.Service.Contracts.Results;
 using Movie.Service.Contracts.Interfaces;
-
+using Movie.Service.Contracts.Results;
 using MovieEntity = Movie.Core.Entities.Movie;
 
 namespace Movie.Services;

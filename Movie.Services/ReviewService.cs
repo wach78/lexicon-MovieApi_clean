@@ -17,7 +17,7 @@ public class ReviewService : IReviewService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<ReviewDto?> CreateReviewAsync(Guid movieId, ReviewCreateDto reviewCreateDto,CancellationToken cancellationToken = default)
+    public async Task<ReviewDto?> CreateReviewAsync(Guid movieId, ReviewCreateDto reviewCreateDto, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(reviewCreateDto);
 
@@ -52,7 +52,7 @@ public class ReviewService : IReviewService
 
     public async Task<bool> DeleteReviewAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        Review? review = await _unitOfWork.Reviews.GetAsync(id,cancellationToken);
+        Review? review = await _unitOfWork.Reviews.GetAsync(id, cancellationToken);
 
         if (review is null)
         {

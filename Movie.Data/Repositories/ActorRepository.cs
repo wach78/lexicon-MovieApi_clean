@@ -7,7 +7,7 @@ using Movie.Core.Entities;
 
 namespace Movie.Data.Repositories;
 
-public class ActorRepository: IActorRepository
+public class ActorRepository : IActorRepository
 {
     private readonly MovieApiContext _context;
 
@@ -25,7 +25,7 @@ public class ActorRepository: IActorRepository
         _context.Set<Actor>().Add(actor);
     }
 
-   async Task<bool> IActorRepository.AnyAsync(Guid id, CancellationToken cancellationToken = default)
+    async Task<bool> IActorRepository.AnyAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _context
            .Set<Actor>()
