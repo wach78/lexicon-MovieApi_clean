@@ -7,7 +7,6 @@ using Movie.Core.Entities;
 using Movie.Service.Contracts.Interfaces;
 using Movie.Service.Contracts.Results;
 
-
 namespace Movie.Presentation.Controllers;
 
 [Route("api/[controller]")]

@@ -59,7 +59,7 @@ public sealed class ReviewRepository : IReviewRepository
         _context.Set<Review>().Remove(review);
     }
 
-    public async Task<IReadOnlyList<Review>> GetByMovieIdAsync(Guid movieId,CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<Review>> GetByMovieIdAsync(Guid movieId, CancellationToken cancellationToken = default)
     {
         return await _context
             .Set<Review>()

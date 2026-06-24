@@ -68,7 +68,7 @@ public class ReviewsController : ControllerBase
         bool isDelted = await _serviceManager.Reviews.DeleteReviewAsync(id, cancellationToken);
 
         if (!isDelted)
-        {     
+        {
             return NoContent();
         }
 
