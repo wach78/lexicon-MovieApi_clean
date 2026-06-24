@@ -110,9 +110,9 @@ public class ReviewService : IReviewService
             .ToList();
     }
 
-    public Task<bool> MovieExistsAsync(Guid movieId, CancellationToken cancellationToken = default)
+    public async Task<bool> MovieExistsAsync(Guid movieId, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        return await _unitOfWork.Movies.AnyAsync(movieId,cancellationToken);
     }
 }
 

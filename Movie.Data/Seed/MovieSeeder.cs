@@ -21,6 +21,7 @@ public static class MovieSeeder
         Genre crime = new("Crime");
         Genre fantasy = new("Fantasy");
         Genre animation = new("Animation");
+        Genre documentary = new("Documentary");
 
         Actor keanuReeves = new("Keanu Reeves", 1964);
         Actor carrieAnneMoss = new("Carrie-Anne Moss", 1967);
@@ -407,7 +408,8 @@ public static class MovieSeeder
             action,
             crime,
             fantasy,
-            animation
+            animation,
+            documentary
         );
 
         context.Set<MovieEntity>().AddRange(

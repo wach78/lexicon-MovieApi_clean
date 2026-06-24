@@ -69,9 +69,9 @@ public class ReviewsController : ControllerBase
 
         if (!isDelted)
         {
-            return NoContent();
+            return NotFound();
         }
 
-        return NotFound();
+        return NoContent();
     }
 }
