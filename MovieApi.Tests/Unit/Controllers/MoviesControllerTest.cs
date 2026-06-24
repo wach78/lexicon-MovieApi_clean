@@ -9,7 +9,6 @@ using Movie.Presentation.Controllers;
 using Movie.Service.Contracts.Interfaces;
 using Movie.Service.Contracts.Results;
 using Xunit;
-using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
 
 namespace MovieApi.Tests.Unit.Controllers;
 
