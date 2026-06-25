@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Movie.Core.DomainContracts;
 using Movie.Core.Entities;
+using Movie.Core.Pagination;
+using Movie.Core.Parameters;
 using Movie.Data.Context;
 
 namespace Movie.Data.Repositories;
@@ -15,13 +17,34 @@ public sealed class ReviewRepository : IReviewRepository
 
         _context = context;
     }
-
-    public async Task<IEnumerable<Review>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<PagedResult<Review>> GetAllAsync(PaginationParameters paginationParameters, CancellationToken cancellationToken = default)
     {
-        return await _context
+        ArgumentNullException.ThrowIfNull(paginationParameters);
+
+        IQueryable<Review> query = _context
             .Set<Review>()
-            .AsNoTracking()
-            .ToListAsync();
+            .AsNoTracking();
+
+        int totalItems = await query.CountAsync(cancellationToken);
+
+        IReadOnlyList<Review> items = await query
+            .OrderBy(review => review.Id)
+            .Skip((paginationParameters.Page - 1) * paginationParameters.PageSize)
+            .Take(paginationParameters.PageSize)
+            .ToListAsync(cancellationToken);
+
+        int totalPages = (int)Math.Ceiling(
+            totalItems / (double)paginationParameters.PageSize
+        );
+
+        return new PagedResult<Review>
+        {
+            Items = items,
+            TotalItems = totalItems,
+            CurrentPage = paginationParameters.Page,
+            TotalPages = totalPages,
+            PageSize = paginationParameters.PageSize
+        };
     }
 
     public async Task<Review?> GetAsync(Guid id, CancellationToken cancellationToken = default)

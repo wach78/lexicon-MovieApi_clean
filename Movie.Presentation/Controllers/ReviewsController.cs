@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Movie.Core.DTOs.Actor;
 using Movie.Core.DTOs.Review;
 using Movie.Core.Entities;
+using Movie.Core.Pagination;
+using Movie.Core.Parameters;
 using Movie.Service.Contracts.Interfaces;
 using MovieEntity = Movie.Core.Entities.Movie;
 namespace Movie.Presentation.Controllers;
@@ -22,9 +24,14 @@ public class ReviewsController : ControllerBase
 
     // GET: api/Reviws
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<ReviewDto>>> GetReview(CancellationToken cancellationToken)
+    public async Task<ActionResult<PagedResult<ReviewDto>>> GetReview(
+        [FromQuery] PaginationParameters paginationParameters,
+        CancellationToken cancellationToken)
     {
-        IReadOnlyList<ReviewDto> reviews = await _serviceManager.Reviews.GetReviewsAsync(cancellationToken);
+        PagedResult<ReviewDto> reviews =
+            await _serviceManager.Reviews.GetReviewsAsync(
+                paginationParameters,
+                cancellationToken);
 
         return Ok(reviews);
     }

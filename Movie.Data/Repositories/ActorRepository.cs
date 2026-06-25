@@ -38,6 +38,8 @@ public class ActorRepository : IActorRepository
 
     async Task<PagedResult<Actor>> IActorRepository.GetAllAsync(PaginationParameters paginationParameters, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(paginationParameters);
+
         IQueryable<Actor> query = _context
             .Set<Actor>()
             .AsNoTracking();
@@ -45,6 +47,7 @@ public class ActorRepository : IActorRepository
         int totalItems = await query.CountAsync(cancellationToken);
 
         IReadOnlyList<Actor> items = await query
+            .OrderBy(actor => actor.Id)
             .Skip((paginationParameters.Page - 1) * paginationParameters.PageSize)
             .Take(paginationParameters.PageSize)
             .ToListAsync(cancellationToken);

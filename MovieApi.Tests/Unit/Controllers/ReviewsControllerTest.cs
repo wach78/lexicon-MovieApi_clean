@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using Movie.Core.DTOs.Review;
+using Movie.Core.Pagination;
+using Movie.Core.Parameters;
 using Movie.Presentation.Controllers;
 using Movie.Service.Contracts.Interfaces;
 namespace MovieApi.Tests.Unit.Controllers;
@@ -94,9 +96,15 @@ public class ReviewsControllerTest
     }
 
     [Fact]
-    public async Task GetReview_WhenServiceReturnsReviews_ReturnsOkWithReviews()
+    public async Task GetReview_WhenServiceReturnsReviews_ReturnsOkWithPagedReviews()
     {
         CancellationToken cancellationToken = CancellationToken.None;
+
+        PaginationParameters paginationParameters = new()
+        {
+            Page = 1,
+            PageSize = 10
+        };
 
         IReadOnlyList<ReviewDto> reviews =
         [
@@ -109,23 +117,43 @@ public class ReviewsControllerTest
         }
         ];
 
-        _reviewServiceMock
-            .Setup(service => service.GetReviewsAsync(cancellationToken))
-            .ReturnsAsync(reviews);
+        PagedResult<ReviewDto> expectedResult = new()
+        {
+            Items = reviews,
+            TotalItems = 1,
+            CurrentPage = paginationParameters.Page,
+            TotalPages = 1,
+            PageSize = paginationParameters.PageSize
+        };
 
-        ActionResult<IEnumerable<ReviewDto>> actionResult =
-            await _controller.GetReview(cancellationToken);
+        _reviewServiceMock
+            .Setup(service => service.GetReviewsAsync(
+                paginationParameters,
+                cancellationToken))
+            .ReturnsAsync(expectedResult);
+
+        ActionResult<PagedResult<ReviewDto>> actionResult =
+            await _controller.GetReview(
+                paginationParameters,
+                cancellationToken);
 
         OkObjectResult okResult =
             Assert.IsType<OkObjectResult>(actionResult.Result);
 
-        IReadOnlyList<ReviewDto> returnedReviews =
-            Assert.IsAssignableFrom<IReadOnlyList<ReviewDto>>(okResult.Value);
+        PagedResult<ReviewDto> returnedResult =
+            Assert.IsType<PagedResult<ReviewDto>>(okResult.Value);
 
-        Assert.Same(reviews, returnedReviews);
+        Assert.Same(expectedResult, returnedResult);
+        Assert.Same(reviews, returnedResult.Items);
+        Assert.Equal(1, returnedResult.TotalItems);
+        Assert.Equal(paginationParameters.Page, returnedResult.CurrentPage);
+        Assert.Equal(1, returnedResult.TotalPages);
+        Assert.Equal(paginationParameters.PageSize, returnedResult.PageSize);
 
         _reviewServiceMock.Verify(
-            service => service.GetReviewsAsync(cancellationToken),
+            service => service.GetReviewsAsync(
+                paginationParameters,
+                cancellationToken),
             Times.Once);
 
         _reviewServiceMock.VerifyNoOtherCalls();

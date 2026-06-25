@@ -2,12 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Movie.Core.Entities;
+using Movie.Core.Pagination;
+using Movie.Core.Parameters;
 
 namespace Movie.Core.DomainContracts;
 
 public interface IReviewRepository
 {
-    Task<IEnumerable<Review>> GetAllAsync(CancellationToken cancellationToken = default);
+    Task<PagedResult<Review>> GetAllAsync(PaginationParameters paginationParameters, CancellationToken cancellationToken = default);
     Task<Review?> GetAsync(Guid id, CancellationToken cancellationToken = default);
     Task<bool> AnyAsync(Guid id);
     void Add(Review actor);
