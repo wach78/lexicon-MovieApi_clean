@@ -3,6 +3,8 @@ using Movie.Core.DomainContracts;
 using Movie.Core.DTOs.Actor;
 using Movie.Core.DTOs.Movie;
 using Movie.Core.DTOs.Report;
+using Movie.Core.Pagination;
+using Movie.Core.Parameters;
 using Movie.Data.Context;
 using MovieEntity = Movie.Core.Entities.Movie;
 
@@ -19,11 +21,14 @@ public sealed class ReportRepository : IReportRepository
         _context = context;
     }
 
-    public async Task<IReadOnlyList<MovieAverageRatingDto>>
+    public async Task<PagedResult<MovieAverageRatingDto>>
         GetAverageRatingsByGenreAsync(
+            PaginationParameters paginationParameters,
             CancellationToken cancellationToken = default)
     {
-        return await _context
+        ArgumentNullException.ThrowIfNull(paginationParameters);
+
+        IQueryable<MovieAverageRatingDto> query = _context
             .Set<MovieEntity>()
             .AsNoTracking()
             .Where(movie => movie.Reviews.Any())
@@ -47,27 +52,87 @@ public sealed class ReportRepository : IReportRepository
                 ReviewCount = group
                     .SelectMany(movie => movie.Reviews)
                     .Count()
-            })
+            });
+
+        int totalItems = await query.CountAsync(cancellationToken);
+
+        IReadOnlyList<MovieAverageRatingDto> items = await query
+            .OrderBy(result => result.GenreName)
+            .ThenBy(result => result.GenreId)
+            .Skip(
+                (paginationParameters.Page - 1) *
+                paginationParameters.PageSize
+            )
+            .Take(paginationParameters.PageSize)
             .ToListAsync(cancellationToken);
+
+        int totalPages = (int)Math.Ceiling(
+            totalItems / (double)paginationParameters.PageSize
+        );
+
+        return new PagedResult<MovieAverageRatingDto>
+        {
+            Items = items,
+            TotalItems = totalItems,
+            CurrentPage = paginationParameters.Page,
+            TotalPages = totalPages,
+            PageSize = paginationParameters.PageSize
+        };
     }
 
-    public async Task<IReadOnlyList<TopMoviesPerGenreDto>>
+    public async Task<PagedResult<TopMoviesPerGenreDto>>
         GetTopMoviesPerGenreAsync(
+            PaginationParameters paginationParameters,
             CancellationToken cancellationToken = default)
     {
-        var movieRatings = await _context
+        ArgumentNullException.ThrowIfNull(paginationParameters);
+
+        var genreQuery = _context
             .Set<MovieEntity>()
             .AsNoTracking()
             .Where(movie => movie.Reviews.Any())
+            .GroupBy(movie => new
+            {
+                movie.GenreId,
+                GenreName = movie.Genre != null
+                    ? movie.Genre.Name
+                    : "No genre"
+            })
+            .Select(group => new
+            {
+                group.Key.GenreId,
+                group.Key.GenreName
+            });
+
+        int totalItems = await genreQuery.CountAsync(cancellationToken);
+
+        var pagedGenres = await genreQuery
+            .OrderBy(genre => genre.GenreName)
+            .ThenBy(genre => genre.GenreId)
+            .Skip(
+                (paginationParameters.Page - 1) *
+                paginationParameters.PageSize
+            )
+            .Take(paginationParameters.PageSize)
+            .ToListAsync(cancellationToken);
+
+        List<Guid?> selectedGenreIds = pagedGenres
+            .Select(genre => genre.GenreId)
+            .ToList();
+
+        var movieRatings = await _context
+            .Set<MovieEntity>()
+            .AsNoTracking()
+            .Where(movie =>
+                movie.Reviews.Any() &&
+                selectedGenreIds.Contains(movie.GenreId)
+            )
             .Select(movie => new
             {
                 MovieId = movie.Id,
                 movie.Title,
                 movie.Year,
                 movie.GenreId,
-                GenreName = movie.Genre != null
-                    ? movie.Genre.Name
-                    : "No genre",
                 AverageRating = movie.Reviews.Average(
                     review => review.Rating
                 ),
@@ -75,19 +140,23 @@ public sealed class ReportRepository : IReportRepository
             })
             .ToListAsync(cancellationToken);
 
-        return movieRatings
-            .GroupBy(movie => new
+        IReadOnlyList<TopMoviesPerGenreDto> items = pagedGenres
+            .Select(genre => new TopMoviesPerGenreDto
             {
-                movie.GenreId,
-                movie.GenreName
-            })
-            .Select(group => new TopMoviesPerGenreDto
-            {
-                GenreId = group.Key.GenreId,
-                GenreName = group.Key.GenreName,
-                Movies = group
-                    .OrderByDescending(movie => movie.AverageRating)
-                    .ThenByDescending(movie => movie.ReviewCount)
+                GenreId = genre.GenreId,
+                GenreName = genre.GenreName,
+                Movies = movieRatings
+                    .Where(movie =>
+                        movie.GenreId == genre.GenreId
+                    )
+                    .OrderByDescending(movie =>
+                        movie.AverageRating
+                    )
+                    .ThenByDescending(movie =>
+                        movie.ReviewCount
+                    )
+                    .ThenBy(movie => movie.Title)
+                    .ThenBy(movie => movie.MovieId)
                     .Take(5)
                     .Select(movie => new TopRatedMovieDto
                     {
@@ -102,15 +171,30 @@ public sealed class ReportRepository : IReportRepository
                     })
                     .ToList()
             })
-            .OrderBy(result => result.GenreName)
             .ToList();
+
+        int totalPages = (int)Math.Ceiling(
+            totalItems / (double)paginationParameters.PageSize
+        );
+
+        return new PagedResult<TopMoviesPerGenreDto>
+        {
+            Items = items,
+            TotalItems = totalItems,
+            CurrentPage = paginationParameters.Page,
+            TotalPages = totalPages,
+            PageSize = paginationParameters.PageSize
+        };
     }
 
-    public async Task<IReadOnlyList<MostActiveActorDto>>
+    public async Task<PagedResult<MostActiveActorDto>>
         GetMostActiveActorsAsync(
+            PaginationParameters paginationParameters,
             CancellationToken cancellationToken = default)
     {
-        return await _context.Actors
+        ArgumentNullException.ThrowIfNull(paginationParameters);
+
+        IQueryable<MostActiveActorDto> query = _context.Actors
             .AsNoTracking()
             .Where(actor => actor.Movies.Any())
             .Select(actor => new MostActiveActorDto
@@ -118,10 +202,33 @@ public sealed class ReportRepository : IReportRepository
                 ActorId = actor.Id,
                 Name = actor.Name,
                 MovieCount = actor.Movies.Count
-            })
+            });
+
+        int totalItems = await query.CountAsync(cancellationToken);
+
+        IReadOnlyList<MostActiveActorDto> items = await query
             .OrderByDescending(actor => actor.MovieCount)
             .ThenBy(actor => actor.Name)
+            .ThenBy(actor => actor.ActorId)
+            .Skip(
+                (paginationParameters.Page - 1) *
+                paginationParameters.PageSize
+            )
+            .Take(paginationParameters.PageSize)
             .ToListAsync(cancellationToken);
+
+        int totalPages = (int)Math.Ceiling(
+            totalItems / (double)paginationParameters.PageSize
+        );
+
+        return new PagedResult<MostActiveActorDto>
+        {
+            Items = items,
+            TotalItems = totalItems,
+            CurrentPage = paginationParameters.Page,
+            TotalPages = totalPages,
+            PageSize = paginationParameters.PageSize
+        };
     }
 
     public async Task<MovieWithMostReviewsDto?>
@@ -140,14 +247,18 @@ public sealed class ReportRepository : IReportRepository
             })
             .OrderByDescending(movie => movie.ReviewCount)
             .ThenBy(movie => movie.Title)
+            .ThenBy(movie => movie.MovieId)
             .FirstOrDefaultAsync(cancellationToken);
     }
 
-    public async Task<IReadOnlyList<PopularGenreDto>>
+    public async Task<PagedResult<PopularGenreDto>>
         GetPopularGenresAsync(
+            PaginationParameters paginationParameters,
             CancellationToken cancellationToken = default)
     {
-        return await _context
+        ArgumentNullException.ThrowIfNull(paginationParameters);
+
+        IQueryable<PopularGenreDto> query = _context
             .Set<MovieEntity>()
             .AsNoTracking()
             .Where(movie => movie.GenreId != null)
@@ -163,9 +274,32 @@ public sealed class ReportRepository : IReportRepository
                 GenreId = group.Key.GenreId,
                 GenreName = group.Key.GenreName,
                 MovieCount = group.Count()
-            })
+            });
+
+        int totalItems = await query.CountAsync(cancellationToken);
+
+        IReadOnlyList<PopularGenreDto> items = await query
             .OrderByDescending(genre => genre.MovieCount)
             .ThenBy(genre => genre.GenreName)
+            .ThenBy(genre => genre.GenreId)
+            .Skip(
+                (paginationParameters.Page - 1) *
+                paginationParameters.PageSize
+            )
+            .Take(paginationParameters.PageSize)
             .ToListAsync(cancellationToken);
+
+        int totalPages = (int)Math.Ceiling(
+            totalItems / (double)paginationParameters.PageSize
+        );
+
+        return new PagedResult<PopularGenreDto>
+        {
+            Items = items,
+            TotalItems = totalItems,
+            CurrentPage = paginationParameters.Page,
+            TotalPages = totalPages,
+            PageSize = paginationParameters.PageSize
+        };
     }
 }

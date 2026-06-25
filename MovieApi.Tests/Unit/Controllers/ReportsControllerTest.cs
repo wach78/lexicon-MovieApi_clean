@@ -1,14 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Movie.Core.DTOs.Actor;
 using Movie.Core.DTOs.Movie;
 using Movie.Core.DTOs.Report;
+using Movie.Core.Pagination;
+using Movie.Core.Parameters;
 using Movie.Presentation.Controllers;
 using Movie.Service.Contracts.Interfaces;
-using Movie.Services;
 
 namespace MovieApi.Tests.Unit.Controllers;
 
@@ -36,159 +34,255 @@ public sealed class ReportsControllerTest
     }
 
     [Fact]
-    public async Task GetAverageRatingGenre_WhenServiceReturnsRatings_ReturnsOkWithRatings()
+    public async Task GetAverageRatingGenre_WhenServiceReturnsRatings_ReturnsOkWithPagedRatings()
     {
         CancellationToken cancellationToken = CancellationToken.None;
+
+        PaginationParameters paginationParameters = new()
+        {
+            Page = 1,
+            PageSize = 10
+        };
 
         IReadOnlyList<MovieAverageRatingDto> averageRatings =
         [
             new MovieAverageRatingDto
-        {
-            GenreId = Guid.CreateVersion7(),
-            GenreName = "Action",
-            AverageRating = 4.5,
-            ReviewCount = 10
-        },
-        new MovieAverageRatingDto
-        {
-            GenreId = Guid.CreateVersion7(),
-            GenreName = "Drama",
-            AverageRating = 3.8,
-            ReviewCount = 5
-        }
+            {
+                GenreId = Guid.CreateVersion7(),
+                GenreName = "Action",
+                AverageRating = 4.5,
+                ReviewCount = 10
+            },
+            new MovieAverageRatingDto
+            {
+                GenreId = Guid.CreateVersion7(),
+                GenreName = "Drama",
+                AverageRating = 3.8,
+                ReviewCount = 5
+            }
         ];
+
+        PagedResult<MovieAverageRatingDto> expectedResult = new()
+        {
+            Items = averageRatings,
+            TotalItems = 2,
+            CurrentPage = paginationParameters.Page,
+            TotalPages = 1,
+            PageSize = paginationParameters.PageSize
+        };
 
         _reportsServiceMock
             .Setup(service =>
-                service.GetAverageRatingsByGenreAsync(cancellationToken))
-            .ReturnsAsync(averageRatings);
+                service.GetAverageRatingsByGenreAsync(
+                    paginationParameters,
+                    cancellationToken
+                ))
+            .ReturnsAsync(expectedResult);
 
-        ActionResult<IReadOnlyList<MovieAverageRatingDto>> actionResult =
-            await _controller.GetAverageRatingGenre(cancellationToken);
+        ActionResult<PagedResult<MovieAverageRatingDto>> actionResult =
+            await _controller.GetAverageRatingGenre(
+                paginationParameters,
+                cancellationToken
+            );
 
         OkObjectResult okResult =
             Assert.IsType<OkObjectResult>(actionResult.Result);
 
-        IReadOnlyList<MovieAverageRatingDto> returnedRatings =
-            Assert.IsAssignableFrom<IReadOnlyList<MovieAverageRatingDto>>(
-                okResult.Value);
+        PagedResult<MovieAverageRatingDto> returnedResult =
+            Assert.IsType<PagedResult<MovieAverageRatingDto>>(
+                okResult.Value
+            );
 
-        Assert.Same(averageRatings, returnedRatings);
+        Assert.Same(expectedResult, returnedResult);
+        Assert.Same(averageRatings, returnedResult.Items);
+        Assert.Equal(2, returnedResult.TotalItems);
+        Assert.Equal(1, returnedResult.CurrentPage);
+        Assert.Equal(1, returnedResult.TotalPages);
+        Assert.Equal(10, returnedResult.PageSize);
 
         _serviceManagerMock.VerifyGet(
             serviceManager => serviceManager.Reports,
-            Times.Once);
+            Times.Once
+        );
 
         _reportsServiceMock.Verify(
             service =>
-                service.GetAverageRatingsByGenreAsync(cancellationToken),
-            Times.Once);
+                service.GetAverageRatingsByGenreAsync(
+                    paginationParameters,
+                    cancellationToken
+                ),
+            Times.Once
+        );
 
         _serviceManagerMock.VerifyNoOtherCalls();
         _reportsServiceMock.VerifyNoOtherCalls();
     }
 
     [Fact]
-    public async Task GetTop5MoviesPerGenre_WhenServiceReturnsMovies_ReturnsOkWithMovies()
+    public async Task GetTop5MoviesPerGenre_WhenServiceReturnsMovies_ReturnsOkWithPagedMovies()
     {
         CancellationToken cancellationToken = CancellationToken.None;
+
+        PaginationParameters paginationParameters = new()
+        {
+            Page = 1,
+            PageSize = 10
+        };
 
         IReadOnlyList<TopMoviesPerGenreDto> movies =
         [
             new TopMoviesPerGenreDto
-        {
-            GenreId = Guid.CreateVersion7(),
-            GenreName = "Action",
-            Movies =
-            [
-                new TopRatedMovieDto
-                {
-                    MovieId = Guid.CreateVersion7(),
-                    Title = "The Matrix",
-                    Year = 1999,
-                    AverageRating = 4.8,
-                    ReviewCount = 25
-                }
-            ]
-        }
+            {
+                GenreId = Guid.CreateVersion7(),
+                GenreName = "Action",
+                Movies =
+                [
+                    new TopRatedMovieDto
+                    {
+                        MovieId = Guid.CreateVersion7(),
+                        Title = "The Matrix",
+                        Year = 1999,
+                        AverageRating = 4.8,
+                        ReviewCount = 25
+                    }
+                ]
+            }
         ];
+
+        PagedResult<TopMoviesPerGenreDto> expectedResult = new()
+        {
+            Items = movies,
+            TotalItems = 1,
+            CurrentPage = paginationParameters.Page,
+            TotalPages = 1,
+            PageSize = paginationParameters.PageSize
+        };
 
         _reportsServiceMock
             .Setup(service =>
-                service.GetTopMoviesPerGenreAsync(cancellationToken))
-            .ReturnsAsync(movies);
+                service.GetTopMoviesPerGenreAsync(
+                    paginationParameters,
+                    cancellationToken
+                ))
+            .ReturnsAsync(expectedResult);
 
-        ActionResult<IReadOnlyList<TopMoviesPerGenreDto>> actionResult =
-            await _controller.GetTop5MoviesPerGenre(cancellationToken);
+        ActionResult<PagedResult<TopMoviesPerGenreDto>> actionResult =
+            await _controller.GetTop5MoviesPerGenre(
+                paginationParameters,
+                cancellationToken
+            );
 
         OkObjectResult okResult =
             Assert.IsType<OkObjectResult>(actionResult.Result);
 
-        IReadOnlyList<TopMoviesPerGenreDto> returnedMovies =
-            Assert.IsAssignableFrom<IReadOnlyList<TopMoviesPerGenreDto>>(
-                okResult.Value);
+        PagedResult<TopMoviesPerGenreDto> returnedResult =
+            Assert.IsType<PagedResult<TopMoviesPerGenreDto>>(
+                okResult.Value
+            );
 
-        Assert.Same(movies, returnedMovies);
+        Assert.Same(expectedResult, returnedResult);
+        Assert.Same(movies, returnedResult.Items);
+        Assert.Equal(1, returnedResult.TotalItems);
+        Assert.Equal(1, returnedResult.CurrentPage);
+        Assert.Equal(1, returnedResult.TotalPages);
+        Assert.Equal(10, returnedResult.PageSize);
 
         _serviceManagerMock.VerifyGet(
             serviceManager => serviceManager.Reports,
-            Times.Once);
+            Times.Once
+        );
 
         _reportsServiceMock.Verify(
             service =>
-                service.GetTopMoviesPerGenreAsync(cancellationToken),
-            Times.Once);
+                service.GetTopMoviesPerGenreAsync(
+                    paginationParameters,
+                    cancellationToken
+                ),
+            Times.Once
+        );
 
         _serviceManagerMock.VerifyNoOtherCalls();
         _reportsServiceMock.VerifyNoOtherCalls();
     }
 
     [Fact]
-    public async Task GetMostActiveActors_WhenServiceReturnsActors_ReturnsOkWithActors()
+    public async Task GetMostActiveActors_WhenServiceReturnsActors_ReturnsOkWithPagedActors()
     {
         CancellationToken cancellationToken = CancellationToken.None;
+
+        PaginationParameters paginationParameters = new()
+        {
+            Page = 1,
+            PageSize = 10
+        };
 
         IReadOnlyList<MostActiveActorDto> actors =
         [
             new MostActiveActorDto
-        {
-            ActorId = Guid.CreateVersion7(),
-            Name = "Keanu Reeves",
-            MovieCount = 12
-        },
-        new MostActiveActorDto
-        {
-            ActorId = Guid.CreateVersion7(),
-            Name = "Carrie-Anne Moss",
-            MovieCount = 8
-        }
+            {
+                ActorId = Guid.CreateVersion7(),
+                Name = "Keanu Reeves",
+                MovieCount = 12
+            },
+            new MostActiveActorDto
+            {
+                ActorId = Guid.CreateVersion7(),
+                Name = "Carrie-Anne Moss",
+                MovieCount = 8
+            }
         ];
+
+        PagedResult<MostActiveActorDto> expectedResult = new()
+        {
+            Items = actors,
+            TotalItems = 2,
+            CurrentPage = paginationParameters.Page,
+            TotalPages = 1,
+            PageSize = paginationParameters.PageSize
+        };
 
         _reportsServiceMock
             .Setup(service =>
-                service.GetMostActiveActorsAsync(cancellationToken))
-            .ReturnsAsync(actors);
+                service.GetMostActiveActorsAsync(
+                    paginationParameters,
+                    cancellationToken
+                ))
+            .ReturnsAsync(expectedResult);
 
-        ActionResult<IReadOnlyList<MostActiveActorDto>> actionResult =
-            await _controller.GetMostActiveActors(cancellationToken);
+        ActionResult<PagedResult<MostActiveActorDto>> actionResult =
+            await _controller.GetMostActiveActors(
+                paginationParameters,
+                cancellationToken
+            );
 
         OkObjectResult okResult =
             Assert.IsType<OkObjectResult>(actionResult.Result);
 
-        IReadOnlyList<MostActiveActorDto> returnedActors =
-            Assert.IsAssignableFrom<IReadOnlyList<MostActiveActorDto>>(
-                okResult.Value);
+        PagedResult<MostActiveActorDto> returnedResult =
+            Assert.IsType<PagedResult<MostActiveActorDto>>(
+                okResult.Value
+            );
 
-        Assert.Same(actors, returnedActors);
+        Assert.Same(expectedResult, returnedResult);
+        Assert.Same(actors, returnedResult.Items);
+        Assert.Equal(2, returnedResult.TotalItems);
+        Assert.Equal(1, returnedResult.CurrentPage);
+        Assert.Equal(1, returnedResult.TotalPages);
+        Assert.Equal(10, returnedResult.PageSize);
 
         _serviceManagerMock.VerifyGet(
             serviceManager => serviceManager.Reports,
-            Times.Once);
+            Times.Once
+        );
 
         _reportsServiceMock.Verify(
             service =>
-                service.GetMostActiveActorsAsync(cancellationToken),
-            Times.Once);
+                service.GetMostActiveActorsAsync(
+                    paginationParameters,
+                    cancellationToken
+                ),
+            Times.Once
+        );
 
         _serviceManagerMock.VerifyNoOtherCalls();
         _reportsServiceMock.VerifyNoOtherCalls();
@@ -224,12 +318,14 @@ public sealed class ReportsControllerTest
 
         _serviceManagerMock.VerifyGet(
             serviceManager => serviceManager.Reports,
-            Times.Once);
+            Times.Once
+        );
 
         _reportsServiceMock.Verify(
             service =>
                 service.GetMovieWithMostReviewsAsync(cancellationToken),
-            Times.Once);
+            Times.Once
+        );
 
         _serviceManagerMock.VerifyNoOtherCalls();
         _reportsServiceMock.VerifyNoOtherCalls();
@@ -252,53 +348,87 @@ public sealed class ReportsControllerTest
 
         _serviceManagerMock.VerifyGet(
             serviceManager => serviceManager.Reports,
-            Times.Once);
+            Times.Once
+        );
 
         _reportsServiceMock.Verify(
             service =>
                 service.GetMovieWithMostReviewsAsync(cancellationToken),
-            Times.Once);
+            Times.Once
+        );
 
         _serviceManagerMock.VerifyNoOtherCalls();
         _reportsServiceMock.VerifyNoOtherCalls();
     }
 
     [Fact]
-    public async Task GetPopularGenre_WhenServiceReturnsGenres_ReturnsOkWithGenres()
+    public async Task GetPopularGenre_WhenServiceReturnsGenres_ReturnsOkWithPagedGenres()
     {
         CancellationToken cancellationToken = CancellationToken.None;
+
+        PaginationParameters paginationParameters = new()
+        {
+            Page = 1,
+            PageSize = 10
+        };
 
         IReadOnlyList<PopularGenreDto> genres =
         [
             new PopularGenreDto(),
-        new PopularGenreDto()
+            new PopularGenreDto()
         ];
+
+        PagedResult<PopularGenreDto> expectedResult = new()
+        {
+            Items = genres,
+            TotalItems = 2,
+            CurrentPage = paginationParameters.Page,
+            TotalPages = 1,
+            PageSize = paginationParameters.PageSize
+        };
 
         _reportsServiceMock
             .Setup(service =>
-                service.GetPopularGenresAsync(cancellationToken))
-            .ReturnsAsync(genres);
+                service.GetPopularGenresAsync(
+                    paginationParameters,
+                    cancellationToken
+                ))
+            .ReturnsAsync(expectedResult);
 
-        ActionResult<IReadOnlyList<PopularGenreDto>> actionResult =
-            await _controller.GetPopularGenre(cancellationToken);
+        ActionResult<PagedResult<PopularGenreDto>> actionResult =
+            await _controller.GetPopularGenre(
+                paginationParameters,
+                cancellationToken
+            );
 
         OkObjectResult okResult =
             Assert.IsType<OkObjectResult>(actionResult.Result);
 
-        IReadOnlyList<PopularGenreDto> returnedGenres =
-            Assert.IsAssignableFrom<IReadOnlyList<PopularGenreDto>>(
-                okResult.Value);
+        PagedResult<PopularGenreDto> returnedResult =
+            Assert.IsType<PagedResult<PopularGenreDto>>(
+                okResult.Value
+            );
 
-        Assert.Same(genres, returnedGenres);
+        Assert.Same(expectedResult, returnedResult);
+        Assert.Same(genres, returnedResult.Items);
+        Assert.Equal(2, returnedResult.TotalItems);
+        Assert.Equal(1, returnedResult.CurrentPage);
+        Assert.Equal(1, returnedResult.TotalPages);
+        Assert.Equal(10, returnedResult.PageSize);
 
         _serviceManagerMock.VerifyGet(
             serviceManager => serviceManager.Reports,
-            Times.Once);
+            Times.Once
+        );
 
         _reportsServiceMock.Verify(
             service =>
-                service.GetPopularGenresAsync(cancellationToken),
-            Times.Once);
+                service.GetPopularGenresAsync(
+                    paginationParameters,
+                    cancellationToken
+                ),
+            Times.Once
+        );
 
         _serviceManagerMock.VerifyNoOtherCalls();
         _reportsServiceMock.VerifyNoOtherCalls();
