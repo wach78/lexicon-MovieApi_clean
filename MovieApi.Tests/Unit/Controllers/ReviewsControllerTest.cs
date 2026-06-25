@@ -37,9 +37,14 @@ public class ReviewsControllerTest
     [Fact]
     public async Task GetMovieReviews_WhenServiceReturnsReviews_ReturnsOkWithReviews()
     {
-        // Arrange
         Guid movieId = Guid.CreateVersion7();
         CancellationToken cancellationToken = CancellationToken.None;
+
+        PaginationParameters paginationParameters = new()
+        {
+            Page = 1,
+            PageSize = 10
+        };
 
         IReadOnlyList<ReviewDto> reviews =
         [
@@ -52,23 +57,46 @@ public class ReviewsControllerTest
         }
         ];
 
-        _reviewServiceMock
-            .Setup(service => service.GetReviewsByMovieIdAsync(movieId, cancellationToken))
-            .ReturnsAsync(reviews);
+        PagedResult<ReviewDto> expectedResult = new()
+        {
+            Items = reviews,
+            TotalItems = 1,
+            CurrentPage = paginationParameters.Page,
+            TotalPages = 1,
+            PageSize = paginationParameters.PageSize
+        };
 
-        ActionResult<IReadOnlyList<ReviewDto>> actionResult =
-            await _controller.GetMovieReviews(movieId, cancellationToken);
+        _reviewServiceMock
+            .Setup(service => service.GetReviewsByMovieIdAsync(
+                movieId,
+                paginationParameters,
+                cancellationToken))
+            .ReturnsAsync(expectedResult);
+
+        ActionResult<PagedResult<ReviewDto>> actionResult =
+            await _controller.GetMovieReviews(
+                movieId,
+                paginationParameters,
+                cancellationToken);
 
         OkObjectResult okResult =
             Assert.IsType<OkObjectResult>(actionResult.Result);
 
-        IReadOnlyList<ReviewDto> returnedReviews =
-            Assert.IsAssignableFrom<IReadOnlyList<ReviewDto>>(okResult.Value);
+        PagedResult<ReviewDto> returnedResult =
+            Assert.IsType<PagedResult<ReviewDto>>(okResult.Value);
 
-        Assert.Same(reviews, returnedReviews);
+        Assert.Same(expectedResult, returnedResult);
+        Assert.Same(reviews, returnedResult.Items);
+        Assert.Equal(1, returnedResult.TotalItems);
+        Assert.Equal(1, returnedResult.CurrentPage);
+        Assert.Equal(1, returnedResult.TotalPages);
+        Assert.Equal(10, returnedResult.PageSize);
 
         _reviewServiceMock.Verify(
-            service => service.GetReviewsByMovieIdAsync(movieId, cancellationToken),
+            service => service.GetReviewsByMovieIdAsync(
+                movieId,
+                paginationParameters,
+                cancellationToken),
             Times.Once);
 
         _reviewServiceMock.VerifyNoOtherCalls();
@@ -80,16 +108,32 @@ public class ReviewsControllerTest
         Guid movieId = Guid.CreateVersion7();
         CancellationToken cancellationToken = CancellationToken.None;
 
-        _reviewServiceMock
-            .Setup(service => service.GetReviewsByMovieIdAsync(movieId, cancellationToken))
-            .ReturnsAsync((IReadOnlyList<ReviewDto>?)null);
+        PaginationParameters paginationParameters = new()
+        {
+            Page = 1,
+            PageSize = 10
+        };
 
-        ActionResult<IReadOnlyList<ReviewDto>> actionResult =
-            await _controller.GetMovieReviews(movieId, cancellationToken);
+        _reviewServiceMock
+            .Setup(service => service.GetReviewsByMovieIdAsync(
+                movieId,
+                paginationParameters,
+                cancellationToken))
+            .ReturnsAsync((PagedResult<ReviewDto>?)null);
+
+        ActionResult<PagedResult<ReviewDto>> actionResult =
+            await _controller.GetMovieReviews(
+                movieId,
+                paginationParameters,
+                cancellationToken);
+
         Assert.IsType<NotFoundResult>(actionResult.Result);
 
         _reviewServiceMock.Verify(
-            service => service.GetReviewsByMovieIdAsync(movieId, cancellationToken),
+            service => service.GetReviewsByMovieIdAsync(
+                movieId,
+                paginationParameters,
+                cancellationToken),
             Times.Once);
 
         _reviewServiceMock.VerifyNoOtherCalls();

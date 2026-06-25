@@ -95,8 +95,13 @@ public class ReviewService : IReviewService
         };
     }
 
-    public async Task<IReadOnlyList<ReviewDto>?> GetReviewsByMovieIdAsync(Guid movieId, CancellationToken cancellationToken = default)
+    public async Task<PagedResult<ReviewDto>?> GetReviewsByMovieIdAsync(
+        Guid movieId,
+        PaginationParameters paginationParameters,
+        CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(paginationParameters);
+
         bool movieExists = await _unitOfWork.Movies.AnyAsync(
             movieId,
             cancellationToken
@@ -107,13 +112,14 @@ public class ReviewService : IReviewService
             return null;
         }
 
-        IReadOnlyList<Review> reviews =
+        PagedResult<Review> pagedReviews =
             await _unitOfWork.Reviews.GetByMovieIdAsync(
                 movieId,
+                paginationParameters,
                 cancellationToken
             );
 
-        return reviews
+        IReadOnlyList<ReviewDto> reviewDtos = pagedReviews.Items
             .Select(review => new ReviewDto
             {
                 Id = review.Id,
@@ -122,6 +128,15 @@ public class ReviewService : IReviewService
                 Rating = review.Rating
             })
             .ToList();
+
+        return new PagedResult<ReviewDto>
+        {
+            Items = reviewDtos,
+            TotalItems = pagedReviews.TotalItems,
+            CurrentPage = pagedReviews.CurrentPage,
+            TotalPages = pagedReviews.TotalPages,
+            PageSize = pagedReviews.PageSize
+        };
     }
 
     public async Task<bool> MovieExistsAsync(Guid movieId, CancellationToken cancellationToken = default)

@@ -38,9 +38,16 @@ public class ReviewsController : ControllerBase
 
     //GET /api/movies/{movieId}/reviews
     [HttpGet("/api/movies/{movieId:guid}/reviews")]
-    public async Task<ActionResult<IReadOnlyList<ReviewDto>>> GetMovieReviews([FromRoute] Guid movieId, CancellationToken cancellationToken)
+    public async Task<ActionResult<PagedResult<ReviewDto>>> GetMovieReviews(
+        [FromRoute] Guid movieId,
+        [FromQuery] PaginationParameters paginationParameters,
+        CancellationToken cancellationToken)
     {
-        IReadOnlyList<ReviewDto>? reviews = await _serviceManager.Reviews.GetReviewsByMovieIdAsync(movieId, cancellationToken);
+        PagedResult<ReviewDto>? reviews = await _serviceManager.Reviews.GetReviewsByMovieIdAsync(
+           movieId,
+           paginationParameters,
+           cancellationToken
+       );
 
         if (reviews is null)
         {

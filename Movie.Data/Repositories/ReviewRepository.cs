@@ -82,12 +82,34 @@ public sealed class ReviewRepository : IReviewRepository
         _context.Set<Review>().Remove(review);
     }
 
-    public async Task<IReadOnlyList<Review>> GetByMovieIdAsync(Guid movieId, CancellationToken cancellationToken = default)
+    public async Task<PagedResult<Review>> GetByMovieIdAsync(Guid movieId, PaginationParameters paginationParameters, CancellationToken cancellationToken = default)
     {
-        return await _context
+        ArgumentNullException.ThrowIfNull(paginationParameters);
+
+        IQueryable<Review> query = _context
             .Set<Review>()
             .AsNoTracking()
-            .Where(review => review.MovieId == movieId)
+            .Where(review => review.MovieId == movieId);
+
+        int totalItems = await query.CountAsync(cancellationToken);
+
+        IReadOnlyList<Review> items = await query
+            .OrderBy(review => review.Id)
+            .Skip((paginationParameters.Page - 1) * paginationParameters.PageSize)
+            .Take(paginationParameters.PageSize)
             .ToListAsync(cancellationToken);
+
+        int totalPages = (int)Math.Ceiling(
+            totalItems / (double)paginationParameters.PageSize
+        );
+
+        return new PagedResult<Review>
+        {
+            Items = items,
+            TotalItems = totalItems,
+            CurrentPage = paginationParameters.Page,
+            TotalPages = totalPages,
+            PageSize = paginationParameters.PageSize
+        };
     }
 }

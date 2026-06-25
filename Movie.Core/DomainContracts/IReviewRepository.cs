@@ -15,5 +15,5 @@ public interface IReviewRepository
     void Add(Review actor);
     void Update(Review actor);
     void Remove(Review actor);
-    Task<IReadOnlyList<Review>> GetByMovieIdAsync(Guid movieId, CancellationToken cancellationToken = default);
+    Task<PagedResult<Review>> GetByMovieIdAsync(Guid movieId, PaginationParameters paginationParameters, CancellationToken cancellationToken = default);
 }
