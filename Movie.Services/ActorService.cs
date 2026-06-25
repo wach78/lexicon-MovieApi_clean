@@ -1,6 +1,8 @@
 using Movie.Core.DomainContracts;
 using Movie.Core.DTOs.Actor;
 using Movie.Core.Entities;
+using Movie.Core.Models.Pagination;
+using Movie.Core.Parameters;
 using Movie.Service.Contracts.Interfaces;
 using Movie.Service.Contracts.Results;
 using MovieEntity = Movie.Core.Entities.Movie;
@@ -18,13 +20,19 @@ public sealed class ActorService : IActorService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<IReadOnlyList<ActorDto>> GetActorsAsync(
-        CancellationToken cancellationToken = default)
+    public async Task<PagedResult<ActorDto>> GetActorsAsync(
+    PaginationParameters paginationParameters,
+    CancellationToken cancellationToken = default)
     {
-        IEnumerable<Actor> actors =
-            await _unitOfWork.Actors.GetAllAsync(cancellationToken);
+        ArgumentNullException.ThrowIfNull(paginationParameters);
 
-        return actors
+        PagedResult<Actor> pagedActors =
+            await _unitOfWork.Actors.GetAllAsync(
+                paginationParameters,
+                cancellationToken
+            );
+
+        IReadOnlyList<ActorDto> actorDtos = pagedActors.Items
             .Select(actor => new ActorDto
             {
                 Id = actor.Id,
@@ -32,6 +40,15 @@ public sealed class ActorService : IActorService
                 BirthYear = actor.BirthYear
             })
             .ToList();
+
+        return new PagedResult<ActorDto>
+        {
+            Items = actorDtos,
+            TotalItems = pagedActors.TotalItems,
+            CurrentPage = pagedActors.CurrentPage,
+            TotalPages = pagedActors.TotalPages,
+            PageSize = pagedActors.PageSize
+        };
     }
 
     public async Task<ActorDto?> GetActorByIdAsync(

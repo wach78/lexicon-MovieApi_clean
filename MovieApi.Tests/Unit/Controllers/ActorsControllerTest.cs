@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Movie.Core.DTOs.Actor;
+using Movie.Core.Models.Pagination;
+using Movie.Core.Parameters;
 using Movie.Presentation.Controllers;
 using Movie.Service.Contracts.Interfaces;
 using Movie.Service.Contracts.Results;
@@ -202,9 +204,15 @@ public sealed class ActorsControllerTest
     }
 
     [Fact]
-    public async Task GetActors_WhenServiceReturnsActors_ReturnsOkWithActors()
+    public async Task GetActors_WhenServiceReturnsActors_ReturnsOkWithPagedActors()
     {
         CancellationToken cancellationToken = CancellationToken.None;
+
+        PaginationParameters paginationParameters = new()
+        {
+            Page = 1,
+            PageSize = 100
+        };
 
         IReadOnlyList<ActorDto> actors =
         [
@@ -222,28 +230,47 @@ public sealed class ActorsControllerTest
         }
         ];
 
-        _actorServiceMock
-            .Setup(service => service.GetActorsAsync(cancellationToken))
-            .ReturnsAsync(actors);
+        PagedResult<ActorDto> expectedResult = new()
+        {
+            Items = actors,
+            TotalItems = 2,
+            CurrentPage = paginationParameters.Page,
+            TotalPages = 1,
+            PageSize = paginationParameters.PageSize
+        };
 
-        ActionResult<IReadOnlyList<ActorDto>> actionResult =
-            await _controller.GetActors(cancellationToken);
+        _actorServiceMock
+            .Setup(service => service.GetActorsAsync(
+                paginationParameters,
+                cancellationToken))
+            .ReturnsAsync(expectedResult);
+
+        ActionResult<PagedResult<ActorDto>> actionResult =
+            await _controller.GetActors(
+                paginationParameters,
+                cancellationToken);
 
         OkObjectResult okResult =
             Assert.IsType<OkObjectResult>(actionResult.Result);
 
-        IReadOnlyList<ActorDto> returnedActors =
-            Assert.IsAssignableFrom<IReadOnlyList<ActorDto>>(
-                okResult.Value);
+        PagedResult<ActorDto> returnedResult =
+            Assert.IsType<PagedResult<ActorDto>>(okResult.Value);
 
-        Assert.Same(actors, returnedActors);
+        Assert.Same(expectedResult, returnedResult);
+        Assert.Same(actors, returnedResult.Items);
+        Assert.Equal(2, returnedResult.TotalItems);
+        Assert.Equal(paginationParameters.Page, returnedResult.CurrentPage);
+        Assert.Equal(1, returnedResult.TotalPages);
+        Assert.Equal(paginationParameters.PageSize, returnedResult.PageSize);
 
         _serviceManagerMock.VerifyGet(
             serviceManager => serviceManager.Actors,
             Times.Once);
 
         _actorServiceMock.Verify(
-            service => service.GetActorsAsync(cancellationToken),
+            service => service.GetActorsAsync(
+                paginationParameters,
+                cancellationToken),
             Times.Once);
 
         _serviceManagerMock.VerifyNoOtherCalls();

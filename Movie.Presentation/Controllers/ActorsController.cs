@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Movie.Core.DTOs.Actor;
+using Movie.Core.Models.Pagination;
+using Movie.Core.Parameters;
 using Movie.Service.Contracts.Interfaces;
 using Movie.Service.Contracts.Results;
 
@@ -52,13 +54,17 @@ public sealed class ActorsController : ControllerBase
 
     // GET /api/actors
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyList<ActorDto>>> GetActors(
-        CancellationToken cancellationToken = default)
+    public async Task<ActionResult<PagedResult<ActorDto>>> GetActors(
+     [FromQuery] PaginationParameters paginationParameters,
+     CancellationToken cancellationToken = default)
     {
-        IReadOnlyList<ActorDto> actors =
-            await _serviceManager.Actors.GetActorsAsync(cancellationToken);
+        PagedResult<ActorDto> result =
+            await _serviceManager.Actors.GetActorsAsync(
+                paginationParameters,
+                cancellationToken
+            );
 
-        return Ok(actors);
+        return Ok(result);
     }
 
     // GET /api/actors/{id}
