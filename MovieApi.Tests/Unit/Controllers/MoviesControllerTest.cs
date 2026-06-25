@@ -5,6 +5,8 @@ using Movie.Core.DTOs.Actor;
 using Movie.Core.DTOs.Movie;
 using Movie.Core.DTOs.Review;
 using Movie.Core.Entities;
+using Movie.Core.Pagination;
+using Movie.Core.Parameters;
 using Movie.Presentation.Controllers;
 using Movie.Service.Contracts.Interfaces;
 using Movie.Service.Contracts.Results;
@@ -36,51 +38,69 @@ public sealed class MoviesControllerTests
     [InlineData(null, 1994, null)]
     [InlineData(null, null, "Tom Hanks")]
     [InlineData("Drama", 1994, "Tom Hanks")]
-    public async Task GetMovies_ReturnsOkWithMovies(string? genre, int? year, string? actor)
+    public async Task GetMovies_ReturnsOkWithPagedMovies(
+     string? genre,
+     int? year,
+     string? actor)
     {
         CancellationToken cancellationToken = CancellationToken.None;
+
+        MovieQueryParameters queryParameters = new()
+        {
+            Genre = genre,
+            Year = year,
+            Actor = actor
+        };
 
         IReadOnlyList<MovieDto> expectedMovies =
         [
             new MovieDto
-            {
-                Id = Guid.NewGuid(),
-                Title = "Forrest Gump",
-                Year = 1994,
-                Duration = 142,
-                GenreId = Guid.NewGuid(),
-                GenreName = "Drama"
-            }
+        {
+            Id = Guid.CreateVersion7(),
+            Title = "Forrest Gump",
+            Year = 1994,
+            Duration = 142,
+            GenreId = Guid.CreateVersion7(),
+            GenreName = "Drama"
+        }
         ];
+
+        PagedResult<MovieDto> expectedResult = new()
+        {
+            Items = expectedMovies,
+            TotalItems = 1,
+            CurrentPage = queryParameters.Page,
+            TotalPages = 1,
+            PageSize = queryParameters.PageSize
+        };
 
         _movieServiceMock
             .Setup(service => service.GetMoviesAsync(
-                genre,
-                year,
-                actor,
+                queryParameters,
                 cancellationToken))
-            .ReturnsAsync(expectedMovies);
+            .ReturnsAsync(expectedResult);
 
-        ActionResult<IEnumerable<MovieDto>> actionResult =
-            await _controller.GetMovie(
-                genre,
-                year,
-                actor,
+        ActionResult<PagedResult<MovieDto>> actionResult =
+            await _controller.GetMovies(
+                queryParameters,
                 cancellationToken);
 
         OkObjectResult okResult =
             Assert.IsType<OkObjectResult>(actionResult.Result);
 
-        IReadOnlyList<MovieDto> returnedMovies =
-            Assert.IsAssignableFrom<IReadOnlyList<MovieDto>>(okResult.Value);
+        PagedResult<MovieDto> returnedResult =
+            Assert.IsType<PagedResult<MovieDto>>(okResult.Value);
 
-        Assert.Same(expectedMovies, returnedMovies);
+        Assert.Same(expectedResult, returnedResult);
+        Assert.Same(expectedMovies, returnedResult.Items);
+        Assert.Equal(1, returnedResult.TotalItems);
+        Assert.Equal(queryParameters.Page, returnedResult.CurrentPage);
+        Assert.Equal(1, returnedResult.TotalPages);
+        Assert.Equal(queryParameters.PageSize, returnedResult.PageSize);
 
         _movieServiceMock.Verify(
             service => service.GetMoviesAsync(
-                genre,
-                year,
-                actor,
+                queryParameters,
                 cancellationToken),
             Times.Once);
 
@@ -88,40 +108,48 @@ public sealed class MoviesControllerTests
     }
 
     [Fact]
-    public async Task GetMovies_ReturnsOkWithEmptyList()
+    public async Task GetMovies_ReturnsOkWithEmptyPagedResult()
     {
         CancellationToken cancellationToken = CancellationToken.None;
 
-        IReadOnlyList<MovieDto> expectedMovies = Array.Empty<MovieDto>();
+        MovieQueryParameters queryParameters = new();
+
+        PagedResult<MovieDto> expectedResult = new()
+        {
+            Items = Array.Empty<MovieDto>(),
+            TotalItems = 0,
+            CurrentPage = queryParameters.Page,
+            TotalPages = 0,
+            PageSize = queryParameters.PageSize
+        };
 
         _movieServiceMock
             .Setup(service => service.GetMoviesAsync(
-                null,
-                null,
-                null,
+                queryParameters,
                 cancellationToken))
-            .ReturnsAsync(expectedMovies);
+            .ReturnsAsync(expectedResult);
 
-        ActionResult<IEnumerable<MovieDto>> actionResult =
-            await _controller.GetMovie(
-                null,
-                null,
-                null,
+        ActionResult<PagedResult<MovieDto>> actionResult =
+            await _controller.GetMovies(
+                queryParameters,
                 cancellationToken);
 
         OkObjectResult okResult =
             Assert.IsType<OkObjectResult>(actionResult.Result);
 
-        IReadOnlyList<MovieDto> returnedMovies =
-            Assert.IsAssignableFrom<IReadOnlyList<MovieDto>>(okResult.Value);
+        PagedResult<MovieDto> returnedResult =
+            Assert.IsType<PagedResult<MovieDto>>(okResult.Value);
 
-        Assert.Empty(returnedMovies);
+        Assert.Same(expectedResult, returnedResult);
+        Assert.Empty(returnedResult.Items);
+        Assert.Equal(0, returnedResult.TotalItems);
+        Assert.Equal(queryParameters.Page, returnedResult.CurrentPage);
+        Assert.Equal(0, returnedResult.TotalPages);
+        Assert.Equal(queryParameters.PageSize, returnedResult.PageSize);
 
         _movieServiceMock.Verify(
             service => service.GetMoviesAsync(
-                null,
-                null,
-                null,
+                queryParameters,
                 cancellationToken),
             Times.Once);
 

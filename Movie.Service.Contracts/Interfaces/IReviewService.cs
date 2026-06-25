@@ -1,9 +1,13 @@
+using Movie.Core.DTOs.Actor;
 using Movie.Core.DTOs.Review;
+using Movie.Core.Pagination;
+using Movie.Core.Parameters;
 namespace Movie.Service.Contracts.Interfaces;
 
 public interface IReviewService
 {
-    Task<IReadOnlyList<ReviewDto>> GetReviewsAsync(
+    Task<PagedResult<ReviewDto>> GetReviewsAsync(
+        PaginationParameters paginationParameters,
         CancellationToken cancellationToken = default
     );
 

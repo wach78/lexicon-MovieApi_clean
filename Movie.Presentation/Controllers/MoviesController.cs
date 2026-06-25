@@ -4,6 +4,8 @@ using Movie.Core.DTOs.Actor;
 using Movie.Core.DTOs.Movie;
 using Movie.Core.DTOs.Review;
 using Movie.Core.Entities;
+using Movie.Core.Pagination;
+using Movie.Core.Parameters;
 using Movie.Service.Contracts.Interfaces;
 using Movie.Service.Contracts.Results;
 
@@ -24,21 +26,17 @@ public class MoviesController : ControllerBase
 
     // GET: api/Movie
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<MovieDto>>> GetMovie(
-        [FromQuery] string? genre,
-        [FromQuery] int? year,
-        [FromQuery] string? actor,
-        CancellationToken cancellationToken
-        )
+    public async Task<ActionResult<PagedResult<MovieDto>>> GetMovies([FromQuery] MovieQueryParameters queryParameters,CancellationToken cancellationToken)
     {
-        IReadOnlyList<MovieDto> movies = await _serviceManager.Movies.GetMoviesAsync(
-        genre,
-        year,
-        actor,
-        cancellationToken);
+        PagedResult<MovieDto> result =
+            await _serviceManager.Movies.GetMoviesAsync(
+                queryParameters,
+                cancellationToken
+            );
 
-        return Ok(movies);
+        return Ok(result);
     }
+   
 
     // GET: api/Movie/5
     [HttpGet("{id:guid}")]

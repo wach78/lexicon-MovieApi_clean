@@ -3,6 +3,8 @@ using Movie.Core.DTOs.Actor;
 using Movie.Core.DTOs.Movie;
 using Movie.Core.DTOs.Review;
 using Movie.Core.Entities;
+using Movie.Core.Pagination;
+using Movie.Core.Parameters;
 using Movie.Service.Contracts.Interfaces;
 using Movie.Service.Contracts.Results;
 using MovieEntity = Movie.Core.Entities.Movie;
@@ -148,15 +150,17 @@ public class MovieService : IMovieService
         };
     }
 
-    public async Task<IReadOnlyList<MovieDto>> GetMoviesAsync(string? genre, int? year, string? actor, CancellationToken cancellationToken)
+    public async Task<PagedResult<MovieDto>> GetMoviesAsync(MovieQueryParameters queryParameters, CancellationToken cancellationToken)
     {
-        IReadOnlyList<MovieEntity> movies = await _unitOfWork.Movies.GetFilteredAsync(
-         genre,
-         year,
-         actor,
-         cancellationToken);
+        ArgumentNullException.ThrowIfNull(queryParameters);
 
-        return movies
+        PagedResult<MovieEntity> pagedMovies =
+            await _unitOfWork.Movies.GetFilteredAsync(
+                queryParameters,
+                cancellationToken
+            );
+
+        IReadOnlyList<MovieDto> movieDtos = pagedMovies.Items
             .Select(movie => new MovieDto
             {
                 Id = movie.Id,
@@ -167,6 +171,15 @@ public class MovieService : IMovieService
                 GenreName = movie.Genre?.Name
             })
             .ToList();
+
+        return new PagedResult<MovieDto>
+        {
+            Items = movieDtos,
+            TotalItems = pagedMovies.TotalItems,
+            CurrentPage = pagedMovies.CurrentPage,
+            TotalPages = pagedMovies.TotalPages,
+            PageSize = pagedMovies.PageSize
+        };
     }
 
     public async Task<UpdateMovieResult> UpdateMovieAsync(Guid id, MovieUpdateDto movieUpdateDto, CancellationToken cancellationToken)

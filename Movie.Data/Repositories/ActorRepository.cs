@@ -4,6 +4,9 @@ using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Movie.Core.DomainContracts;
 using Movie.Core.Entities;
+using Movie.Core.Pagination;
+using Movie.Core.Parameters;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Movie.Data.Repositories;
 
@@ -25,22 +28,45 @@ public class ActorRepository : IActorRepository
         _context.Set<Actor>().Add(actor);
     }
 
-    async Task<bool> IActorRepository.AnyAsync(Guid id, CancellationToken cancellationToken = default)
+    async Task<bool> IActorRepository.AnyAsync(Guid id, CancellationToken cancellationToken)
     {
         return await _context
            .Set<Actor>()
            .AnyAsync(actor => actor.Id == id, cancellationToken);
+
     }
 
-    async Task<IEnumerable<Actor>> IActorRepository.GetAllAsync(CancellationToken cancellationToken = default)
+    async Task<PagedResult<Actor>> IActorRepository.GetAllAsync(PaginationParameters paginationParameters, CancellationToken cancellationToken)
     {
-        return await _context
+        ArgumentNullException.ThrowIfNull(paginationParameters);
+
+        IQueryable<Actor> query = _context
             .Set<Actor>()
-            .AsNoTracking()
+            .AsNoTracking();
+
+        int totalItems = await query.CountAsync(cancellationToken);
+
+        IReadOnlyList<Actor> items = await query
+            .OrderBy(actor => actor.Id)
+            .Skip((paginationParameters.Page - 1) * paginationParameters.PageSize)
+            .Take(paginationParameters.PageSize)
             .ToListAsync(cancellationToken);
+
+        int totalPages = (int)Math.Ceiling(
+            totalItems / (double)paginationParameters.PageSize
+        );
+
+        return new PagedResult<Actor>
+        {
+            Items = items,
+            TotalItems = totalItems,
+            CurrentPage = paginationParameters.Page,
+            TotalPages = totalPages,
+            PageSize = paginationParameters.PageSize
+        };
     }
 
-    async Task<Actor?> IActorRepository.GetAsync(Guid id, CancellationToken cancellationToken = default)
+    async Task<Actor?> IActorRepository.GetAsync(Guid id, CancellationToken cancellationToken)
     {
         return await _context
           .Set<Actor>()

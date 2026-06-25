@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Movie.Core.DomainContracts;
+using Movie.Core.Pagination;
+using Movie.Core.Parameters;
 using Movie.Data.Context;
 using MovieEntity = Movie.Core.Entities.Movie;
 
@@ -85,40 +87,60 @@ public sealed class MovieRepository : IMovieRepository
                 cancellationToken);
     }
 
-    public async Task<IReadOnlyList<MovieEntity>> GetFilteredAsync(string? genre, int? year, string? actor, CancellationToken cancellationToken = default)
+    public async Task<PagedResult<MovieEntity>> GetFilteredAsync(MovieQueryParameters queryParameters, CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(queryParameters);
+
         IQueryable<MovieEntity> query = _context
             .Set<MovieEntity>()
             .AsNoTracking()
             .Include(movie => movie.Genre);
 
-        if (!string.IsNullOrWhiteSpace(genre))
+        if (!string.IsNullOrWhiteSpace(queryParameters.Genre))
         {
-            string trimmedGenre = genre.Trim();
+            string trimmedGenre = queryParameters.Genre.Trim();
 
             query = query.Where(movie =>
                 movie.Genre != null &&
                 movie.Genre.Name == trimmedGenre);
         }
 
-        if (year.HasValue)
+        if (queryParameters.Year.HasValue)
         {
-            query = query.Where(movie => movie.Year == year.Value);
+            query = query.Where(movie =>
+                movie.Year == queryParameters.Year.Value);
         }
 
-        if (!string.IsNullOrWhiteSpace(actor))
+        if (!string.IsNullOrWhiteSpace(queryParameters.Actor))
         {
-            string trimmedActor = actor.Trim();
+            string trimmedActor = queryParameters.Actor.Trim();
 
             query = query.Where(movie =>
                 movie.Actors.Any(movieActor =>
                     movieActor.Name == trimmedActor));
         }
 
-        return await query
+        int totalItems = await query.CountAsync(cancellationToken);
+
+        IReadOnlyList<MovieEntity> items = await query
             .OrderBy(movie => movie.Title)
             .ThenBy(movie => movie.Id)
+            .Skip((queryParameters.Page - 1) * queryParameters.PageSize)
+            .Take(queryParameters.PageSize)
             .ToListAsync(cancellationToken);
+
+        int totalPages = (int)Math.Ceiling(
+            totalItems / (double)queryParameters.PageSize
+        );
+
+        return new PagedResult<MovieEntity>
+        {
+            Items = items,
+            TotalItems = totalItems,
+            CurrentPage = queryParameters.Page,
+            TotalPages = totalPages,
+            PageSize = queryParameters.PageSize
+        };
     }
 
     public async Task<MovieEntity?> GetWithActorsAsync(Guid id, CancellationToken cancellationToken = default)

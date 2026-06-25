@@ -1,6 +1,9 @@
 using Movie.Core.DomainContracts;
+using Movie.Core.DTOs.Actor;
 using Movie.Core.DTOs.Review;
 using Movie.Core.Entities;
+using Movie.Core.Pagination;
+using Movie.Core.Parameters;
 using Movie.Service.Contracts.Interfaces;
 using MovieEntity = Movie.Core.Entities.Movie;
 
@@ -66,11 +69,13 @@ public class ReviewService : IReviewService
         return true;
     }
 
-    public async Task<IReadOnlyList<ReviewDto>> GetReviewsAsync(CancellationToken cancellationToken = default)
+    public async Task<PagedResult<ReviewDto>> GetReviewsAsync(PaginationParameters paginationParameters, CancellationToken cancellationToken = default)
     {
-        IEnumerable<Review> reviews = await _unitOfWork.Reviews.GetAllAsync(cancellationToken);
+        ArgumentNullException.ThrowIfNull(paginationParameters);
+        PagedResult<Review> reviews = await _unitOfWork.Reviews.GetAllAsync(paginationParameters, cancellationToken);
 
-        return reviews
+
+        IReadOnlyList<ReviewDto> reviewDto = reviews.Items
             .Select(review => new ReviewDto
             {
                 Id = review.Id,
@@ -79,6 +84,15 @@ public class ReviewService : IReviewService
                 Rating = review.Rating
             })
             .ToList();
+
+        return new PagedResult<ReviewDto>
+        {
+            Items = reviewDto,
+            TotalItems = reviews.TotalItems,
+            CurrentPage = reviews.CurrentPage,
+            TotalPages = reviews.TotalPages,
+            PageSize = reviews.PageSize
+        };
     }
 
     public async Task<IReadOnlyList<ReviewDto>?> GetReviewsByMovieIdAsync(Guid movieId, CancellationToken cancellationToken = default)

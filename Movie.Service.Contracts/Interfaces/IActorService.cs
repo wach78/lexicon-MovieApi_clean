@@ -1,13 +1,16 @@
 using Movie.Core.DTOs.Actor;
+using Movie.Core.Pagination;
+using Movie.Core.Parameters;
 using Movie.Service.Contracts.Results;
 
 namespace Movie.Service.Contracts.Interfaces;
 
 public interface IActorService
 {
-    Task<IReadOnlyList<ActorDto>> GetActorsAsync(
-        CancellationToken cancellationToken = default
-    );
+    Task<PagedResult<ActorDto>> GetActorsAsync(
+      PaginationParameters paginationParameters,
+      CancellationToken cancellationToken = default
+  );
 
     Task<ActorDto?> GetActorByIdAsync(
         Guid id,
