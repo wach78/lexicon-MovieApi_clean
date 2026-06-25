@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Movie.Core.Entities;
-using Movie.Core.Models.Pagination;
+using Movie.Core.Pagination;
 using Movie.Core.Parameters;
 
 namespace Movie.Core.DomainContracts;

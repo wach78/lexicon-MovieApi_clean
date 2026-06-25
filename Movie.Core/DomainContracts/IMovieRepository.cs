@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Movie.Core.Models.Pagination;
+using Movie.Core.Pagination;
 using Movie.Core.Parameters;
 using MovieEntity = Movie.Core.Entities.Movie;
 namespace Movie.Core.DomainContracts;

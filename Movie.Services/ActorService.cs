@@ -1,7 +1,7 @@
 using Movie.Core.DomainContracts;
 using Movie.Core.DTOs.Actor;
 using Movie.Core.Entities;
-using Movie.Core.Models.Pagination;
+using Movie.Core.Pagination;
 using Movie.Core.Parameters;
 using Movie.Service.Contracts.Interfaces;
 using Movie.Service.Contracts.Results;

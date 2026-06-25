@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Movie.Core.DomainContracts;
-using Movie.Core.Models.Pagination;
+using Movie.Core.Pagination;
 using Movie.Core.Parameters;
 using Movie.Data.Context;
 using MovieEntity = Movie.Core.Entities.Movie;

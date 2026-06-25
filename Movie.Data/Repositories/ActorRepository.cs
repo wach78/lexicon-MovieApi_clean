@@ -4,7 +4,7 @@ using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Movie.Core.DomainContracts;
 using Movie.Core.Entities;
-using Movie.Core.Models.Pagination;
+using Movie.Core.Pagination;
 using Movie.Core.Parameters;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 

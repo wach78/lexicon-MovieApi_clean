@@ -1,4 +1,4 @@
-namespace Movie.Core.Models.Pagination;
+namespace Movie.Core.Pagination;
 
 public sealed class PagedResult<T>
 {
