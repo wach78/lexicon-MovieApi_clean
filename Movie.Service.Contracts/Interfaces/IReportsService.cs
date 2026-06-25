@@ -1,23 +1,28 @@
 using Movie.Core.DTOs.Actor;
 using Movie.Core.DTOs.Movie;
 using Movie.Core.DTOs.Report;
+using Movie.Core.Pagination;
+using Movie.Core.Parameters;
 
 namespace Movie.Service.Contracts.Interfaces;
 
 public interface IReportsService
 {
-    Task<IReadOnlyList<MovieAverageRatingDto>>
+    Task<PagedResult<MovieAverageRatingDto>>
         GetAverageRatingsByGenreAsync(
+            PaginationParameters paginationParameters,
             CancellationToken cancellationToken = default
         );
 
-    Task<IReadOnlyList<TopMoviesPerGenreDto>>
+    Task<PagedResult<TopMoviesPerGenreDto>>
         GetTopMoviesPerGenreAsync(
+            PaginationParameters paginationParameters,
             CancellationToken cancellationToken = default
         );
 
-    Task<IReadOnlyList<MostActiveActorDto>>
+    Task<PagedResult<MostActiveActorDto>>
         GetMostActiveActorsAsync(
+            PaginationParameters paginationParameters,
             CancellationToken cancellationToken = default
         );
 
@@ -25,7 +30,8 @@ public interface IReportsService
         CancellationToken cancellationToken = default
     );
 
-    Task<IReadOnlyList<PopularGenreDto>> GetPopularGenresAsync(
+    Task<PagedResult<PopularGenreDto>> GetPopularGenresAsync(
+        PaginationParameters paginationParameters,
         CancellationToken cancellationToken = default
     );
 }
