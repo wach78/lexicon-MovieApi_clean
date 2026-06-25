@@ -1,13 +1,13 @@
 using Movie.Core.DTOs.Movie;
+using Movie.Core.Models.Pagination;
+using Movie.Core.Parameters;
 using Movie.Service.Contracts.Results;
 namespace Movie.Service.Contracts.Interfaces;
 
 public interface IMovieService
 {
-    Task<IReadOnlyList<MovieDto>> GetMoviesAsync(
-        string? genre,
-        int? year,
-        string? actor,
+    Task<PagedResult<MovieDto>> GetMoviesAsync(
+        MovieQueryParameters queryParameters,
         CancellationToken cancellationToken = default
     );
 
