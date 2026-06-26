@@ -51,7 +51,10 @@ public sealed class ReviewRepository : IReviewRepository
     {
         return await _context
             .Set<Review>()
-            .FirstOrDefaultAsync(review => review.Id == id);
+            .FirstOrDefaultAsync(
+                review => review.Id == id,
+                cancellationToken
+                );
     }
 
     public async Task<bool> AnyAsync(Guid id)

@@ -31,4 +31,11 @@ public interface IReviewService
         Guid id,
         CancellationToken cancellationToken = default
     );
+
+    Task<bool> PatchReviewAsync(
+        Guid movieId,
+        Guid reviewId,
+        ReviewPatchDto reviewPatchDto,
+        CancellationToken cancellationToken = default
+    );
 }

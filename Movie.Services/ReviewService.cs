@@ -143,5 +143,34 @@ public class ReviewService : IReviewService
     {
         return await _unitOfWork.Movies.AnyAsync(movieId,cancellationToken);
     }
+
+    public async Task<bool> PatchReviewAsync(
+        Guid movieId,
+        Guid reviewId,
+        ReviewPatchDto reviewPatchDto,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(reviewPatchDto);
+
+        Review? review = await _unitOfWork.Reviews.GetAsync(
+            reviewId,
+            cancellationToken
+        );
+
+        if (review is null || review.MovieId != movieId)
+        {
+            return false;
+        }
+
+        review.Update(
+            reviewPatchDto.ReviewerName ?? review.ReviewerName,
+            reviewPatchDto.Comment ?? review.Comment,
+            reviewPatchDto.Rating ?? review.Rating
+        );
+
+        await _unitOfWork.CompleteAsync(cancellationToken);
+
+        return true;
+    }
 }
 

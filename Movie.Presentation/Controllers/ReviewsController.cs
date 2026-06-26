@@ -88,4 +88,27 @@ public class ReviewsController : ControllerBase
 
         return NoContent();
     }
+
+    // PATCH /api/movies/{movieId}/reviews/{reviewId}
+    [HttpPatch("/api/movies/{movieId:guid}/reviews/{reviewId:guid}")]
+    public async Task<IActionResult> PatchReview(
+        [FromRoute] Guid movieId,
+        [FromRoute] Guid reviewId,
+        [FromBody] ReviewPatchDto reviewPatchDto,
+        CancellationToken cancellationToken = default)
+    {
+        bool isUpdated = await _serviceManager.Reviews.PatchReviewAsync(
+            movieId,
+            reviewId,
+            reviewPatchDto,
+            cancellationToken
+        );
+
+        if (!isUpdated)
+        {
+            return NotFound();
+        }
+
+        return NoContent();
+    }
 }
