@@ -25,7 +25,7 @@ public class ReviewsController : ControllerBase
     }
 
     // GET: api/Reviws
-    [HttpGet]
+    [HttpGet("Reviws")]
     public async Task<ActionResult<PagedResult<ReviewDto>>> GetReview(
         [FromQuery] PaginationParameters paginationParameters,
         CancellationToken cancellationToken)
@@ -74,11 +74,12 @@ public class ReviewsController : ControllerBase
             return NotFound();
         }
 
-        return Created($"/api/reviews/{reviewDto.Id}", reviewDto);
+        return Created($"/api/v1/reviews/{reviewDto.Id}", reviewDto);
+       
     }
 
     // DELETE: api/Reviews/5
-    [HttpDelete("{id:guid}")]
+    [HttpDelete("reviews/{id:guid}")]
     public async Task<IActionResult> DeleteReview([FromRoute] System.Guid id, CancellationToken cancellationToken = default)
     {
         bool isDelted = await _serviceManager.Reviews.DeleteReviewAsync(id, cancellationToken);

@@ -30,14 +30,18 @@ public sealed class MovieRepository : IMovieRepository
     {
         return await _context
             .Set<MovieEntity>()
-            .FirstOrDefaultAsync(movie => movie.Id == id);
+            .FirstOrDefaultAsync(
+                movie => movie.Id == id,
+                cancellationToken);
     }
 
     public async Task<bool> AnyAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _context
             .Set<MovieEntity>()
-            .AnyAsync(movie => movie.Id == id, cancellationToken);
+            .AnyAsync(
+                movie => movie.Id == id,
+                cancellationToken);
     }
 
     public void Add(MovieEntity movie)

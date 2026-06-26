@@ -241,7 +241,7 @@ public class ReviewsControllerTest
         CreatedResult createdResult =
             Assert.IsType<CreatedResult>(actionResult.Result);
 
-        Assert.Equal($"/api/reviews/{createdReview.Id}", createdResult.Location);
+        Assert.Equal($"/api/v1/reviews/{createdReview.Id}", createdResult.Location);
         Assert.Same(createdReview, createdResult.Value);
 
         _reviewServiceMock.Verify(

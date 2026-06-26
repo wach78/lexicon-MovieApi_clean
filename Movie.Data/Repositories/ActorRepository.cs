@@ -73,7 +73,7 @@ public class ActorRepository : IActorRepository
           .FirstOrDefaultAsync(movie => movie.Id == id, cancellationToken);
     }
 
-    async void IActorRepository.Remove(Actor actor)
+    void IActorRepository.Remove(Actor actor)
     {
         ArgumentNullException.ThrowIfNull(actor);
 
