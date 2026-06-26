@@ -41,6 +41,7 @@ public class ReviewService : IReviewService
         );
 
         movie.Reviews.Add(review);
+        _unitOfWork.Reviews.Add(review);
 
         await _unitOfWork.CompleteAsync(cancellationToken);
 

@@ -25,7 +25,7 @@ public class ReviewsController : ControllerBase
     }
 
     // GET: api/Reviws
-    [HttpGet("Reviws")]
+    [HttpGet("reviews")]
     public async Task<ActionResult<PagedResult<ReviewDto>>> GetReview(
         [FromQuery] PaginationParameters paginationParameters,
         CancellationToken cancellationToken)
@@ -74,8 +74,18 @@ public class ReviewsController : ControllerBase
             return NotFound();
         }
 
-        return Created($"/api/v1/reviews/{reviewDto.Id}", reviewDto);
-       
+        string version = RouteData.Values["version"]?.ToString() ?? "1";
+
+        return CreatedAtAction(
+            nameof(GetMovieReviews),
+            new
+            {
+                version,
+                movieId
+            },
+            reviewDto
+        );
+
     }
 
     // DELETE: api/Reviews/5
