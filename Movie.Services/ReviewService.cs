@@ -74,7 +74,6 @@ public class ReviewService : IReviewService
         ArgumentNullException.ThrowIfNull(paginationParameters);
         PagedResult<Review> reviews = await _unitOfWork.Reviews.GetAllAsync(paginationParameters, cancellationToken);
 
-
         IReadOnlyList<ReviewDto> reviewDto = reviews.Items
             .Select(review => new ReviewDto
             {

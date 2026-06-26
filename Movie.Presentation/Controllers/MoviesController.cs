@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Movie.Core.DTOs.Actor;
@@ -11,8 +12,9 @@ using Movie.Service.Contracts.Results;
 
 namespace Movie.Presentation.Controllers;
 
-[Route("api/[controller]")]
 [ApiController]
+[ApiVersion(1.0)]
+[Route("api/v{version:apiVersion}/[controller]")]
 public class MoviesController : ControllerBase
 {
     private readonly IServiceManager _serviceManager;

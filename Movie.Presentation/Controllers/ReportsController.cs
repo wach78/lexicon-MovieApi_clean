@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
 using Movie.Core.DTOs.Actor;
 using Movie.Core.DTOs.Movie;
@@ -8,8 +9,9 @@ using Movie.Service.Contracts.Interfaces;
 
 namespace Movie.Presentation.Controllers;
 
-[Route("api/[controller]")]
 [ApiController]
+[ApiVersion(1.0)]
+[Route("api/v{version:apiVersion}/reports")]
 public sealed class ReportsController : ControllerBase
 {
     private readonly IServiceManager _serviceManager;

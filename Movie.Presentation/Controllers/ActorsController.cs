@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Movie.Core.DTOs.Actor;
@@ -8,8 +9,9 @@ using Movie.Service.Contracts.Results;
 
 namespace Movie.Presentation.Controllers;
 
-[Route("api/[controller]")]
 [ApiController]
+[ApiVersion(1.0)]
+[Route("api/v{version:apiVersion}")]
 public sealed class ActorsController : ControllerBase
 {
     private readonly IServiceManager _serviceManager;
@@ -22,7 +24,7 @@ public sealed class ActorsController : ControllerBase
     }
 
     // POST /api/movies/{movieId}/actors/{actorId}
-    [HttpPost("/api/movies/{movieId:guid}/actors/{actorId:guid}")]
+    [HttpPost("movies/{movieId:guid}/actors/{actorId:guid}")]
     public async Task<IActionResult> AddActorToMovie(
         [FromRoute] Guid movieId,
         [FromRoute] Guid actorId,
@@ -53,7 +55,7 @@ public sealed class ActorsController : ControllerBase
     }
 
     // GET /api/actors
-    [HttpGet]
+    [HttpGet("actors")]
     public async Task<ActionResult<PagedResult<ActorDto>>> GetActors(
      [FromQuery] PaginationParameters paginationParameters,
      CancellationToken cancellationToken = default)
@@ -68,7 +70,7 @@ public sealed class ActorsController : ControllerBase
     }
 
     // GET /api/actors/{id}
-    [HttpGet("{id:guid}")]
+    [HttpGet("actors/{id:guid}")]
     public async Task<ActionResult<ActorDto>> GetActor(
         [FromRoute] Guid id,
         CancellationToken cancellationToken = default)
@@ -87,7 +89,7 @@ public sealed class ActorsController : ControllerBase
     }
 
     // POST /api/actors
-    [HttpPost]
+    [HttpPost("actors")]
     public async Task<ActionResult<ActorDto>> PostActor(
         [FromBody] ActorCreateDto actorCreateDto,
         CancellationToken cancellationToken = default)
@@ -105,7 +107,7 @@ public sealed class ActorsController : ControllerBase
     }
 
     // PUT /api/actors/{id}
-    [HttpPut("{id:guid}")]
+    [HttpPut("actors/{id:guid}")]
     public async Task<IActionResult> PutActor(
         [FromRoute] Guid id,
         [FromBody] ActorUpdateDto actorUpdateDto,
