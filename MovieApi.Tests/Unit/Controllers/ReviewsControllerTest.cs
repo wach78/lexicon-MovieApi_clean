@@ -350,4 +350,92 @@ public class ReviewsControllerTest
         Assert.Throws<ArgumentNullException>(
             () => new ReviewsController(null!));
     }
+
+    [Fact]
+    public async Task PatchReview_WhenServiceReturnsTrue_ReturnsNoContent()
+    {
+        Guid movieId = Guid.CreateVersion7();
+        Guid reviewId = Guid.CreateVersion7();
+        CancellationToken cancellationToken = CancellationToken.None;
+
+        ReviewPatchDto reviewPatchDto = new()
+        {
+            Comment = "Updated comment.",
+            Rating = 5
+        };
+
+        _reviewServiceMock
+            .Setup(service => service.PatchReviewAsync(
+                movieId,
+                reviewId,
+                reviewPatchDto,
+                cancellationToken
+            ))
+            .ReturnsAsync(true);
+
+        IActionResult actionResult = await _controller.PatchReview(
+            movieId,
+            reviewId,
+            reviewPatchDto,
+            cancellationToken
+        );
+
+        Assert.IsType<NoContentResult>(actionResult);
+
+        _reviewServiceMock.Verify(
+            service => service.PatchReviewAsync(
+                movieId,
+                reviewId,
+                reviewPatchDto,
+                cancellationToken
+            ),
+            Times.Once
+        );
+
+        _reviewServiceMock.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task PatchReview_WhenServiceReturnsFalse_ReturnsNotFound()
+    {
+        Guid movieId = Guid.CreateVersion7();
+        Guid reviewId = Guid.CreateVersion7();
+        CancellationToken cancellationToken = CancellationToken.None;
+
+        ReviewPatchDto reviewPatchDto = new()
+        {
+            Comment = "Updated comment.",
+            Rating = 5
+        };
+
+        _reviewServiceMock
+            .Setup(service => service.PatchReviewAsync(
+                movieId,
+                reviewId,
+                reviewPatchDto,
+                cancellationToken
+            ))
+            .ReturnsAsync(false);
+
+        IActionResult actionResult = await _controller.PatchReview(
+            movieId,
+            reviewId,
+            reviewPatchDto,
+            cancellationToken
+        );
+
+        Assert.IsType<NotFoundResult>(actionResult);
+
+        _reviewServiceMock.Verify(
+            service => service.PatchReviewAsync(
+                movieId,
+                reviewId,
+                reviewPatchDto,
+                cancellationToken
+            ),
+            Times.Once
+        );
+
+        _reviewServiceMock.VerifyNoOtherCalls();
+    }
 }
