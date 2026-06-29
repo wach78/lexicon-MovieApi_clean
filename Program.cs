@@ -11,6 +11,7 @@ using Movie.Service.Contracts.Interfaces;
 using Movie.Services;
 using MovieApi.Extensions;
 using Scalar.AspNetCore;
+using Asp.Versioning.OpenApi.Transformers;
 
 namespace MovieApi;
 
@@ -81,10 +82,27 @@ public class Program
 
                 options.SubstituteApiVersionInUrl = true;
             })
-            .AddOpenApi(options =>
-            {
-                options.Document.AddScalarTransformers();
-            });
+           .AddOpenApi(options =>
+           {
+               string xmlFileName =
+                   $"{typeof(MoviesController).Assembly.GetName().Name}.xml";
+
+               string xmlFilePath =
+                   Path.Combine(AppContext.BaseDirectory, xmlFileName);
+
+               XmlCommentsTransformer xmlCommentsTransformer =
+                   new(xmlFilePath);
+
+               options.Document.AddOperationTransformer(
+                   xmlCommentsTransformer
+               );
+
+               options.Document.AddSchemaTransformer(
+                   xmlCommentsTransformer
+               );
+
+               options.Document.AddScalarTransformers();
+           });
 
         WebApplication app = builder.Build();
 
@@ -97,12 +115,13 @@ public class Program
 
             app.MapScalarApiReference(options =>
             {
+                options.OperationTitleSource =
+                    OperationTitleSource.Path;
+
                 IReadOnlyList<ApiVersionDescription> descriptions =
                     app.DescribeApiVersions();
 
-                foreach (
-                    ApiVersionDescription description in descriptions
-                )
+                foreach (ApiVersionDescription description in descriptions)
                 {
                     bool isDefault = string.Equals(
                         description.GroupName,

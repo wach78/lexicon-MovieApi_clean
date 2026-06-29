@@ -69,16 +69,4 @@
         <ProjectReference Include="Movie.Services\Movie.Services.csproj" />
         <ProjectReference Include="Movie.Presentation\Movie.Presentation.csproj" />
     </ItemGroup>
-
-    <Target Name="AddMoviePresentationXmlDocumentation"
-        AfterTargets="ResolveReferences">
-        <ItemGroup>
-            <AdditionalFiles
-                Include="@(ReferencePath->'%(RootDir)%(Directory)%(Filename).xml')"
-                Condition="'%(ReferencePath.Filename)' == 'Movie.Presentation'
-                       AND Exists('%(ReferencePath.RootDir)%(ReferencePath.Directory)%(ReferencePath.Filename).xml')"
-                KeepMetadata="Identity;HintPath" />
-        </ItemGroup>
-    </Target>
-
 </Project>
