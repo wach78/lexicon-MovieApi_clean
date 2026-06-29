@@ -1,4 +1,5 @@
 using Asp.Versioning;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Movie.Core.DTOs.Actor;
 using Movie.Core.DTOs.Movie;
@@ -23,8 +24,29 @@ public sealed class ReportsController : ControllerBase
         _serviceManager = serviceManager;
     }
 
-    // GET /api/reports/movies/average-ratings
+    /// <summary>
+    /// Gets the average movie rating for each genre.
+    /// </summary>
+    /// <param name="paginationParameters">
+    /// The pagination parameters used to retrieve the report.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// A token used to cancel the asynchronous operation.
+    /// </param>
+    /// <returns>
+    /// A paginated collection containing the average movie rating
+    /// for each genre.
+    /// </returns>
+    /// <response code="200">
+    /// Returns the paginated average-rating report.
+    /// </response>
+    /// <response code="400">
+    /// The supplied pagination parameters are invalid.
+    /// </response>
+    
     [HttpGet("movies/average-ratings")]
+    [ProducesResponseType(typeof(PagedResult<MovieAverageRatingDto>),StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails),StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<PagedResult<MovieAverageRatingDto>>>GetAverageRatingGenre(
             [FromQuery] PaginationParameters paginationParameters,
             CancellationToken cancellationToken = default)
@@ -38,8 +60,29 @@ public sealed class ReportsController : ControllerBase
         return Ok(averageRatings);
     }
 
-    // GET /api/reports/movies/top5pergenre
+    /// <summary>
+    /// Gets the five highest-rated movies for each genre.
+    /// </summary>
+    /// <param name="paginationParameters">
+    /// The pagination parameters used to retrieve the report.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// A token used to cancel the asynchronous operation.
+    /// </param>
+    /// <returns>
+    /// A paginated collection containing the top five movies
+    /// for each genre.
+    /// </returns>
+    /// <response code="200">
+    /// Returns the paginated top-movies-per-genre report.
+    /// </response>
+    /// <response code="400">
+    /// The supplied pagination parameters are invalid.
+    /// </response>
+    
     [HttpGet("movies/top5pergenre")]
+    [ProducesResponseType(typeof(PagedResult<TopMoviesPerGenreDto>),StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails),StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<PagedResult<TopMoviesPerGenreDto>>>GetTop5MoviesPerGenre(
             [FromQuery] PaginationParameters paginationParameters,
             CancellationToken cancellationToken = default)
@@ -53,8 +96,28 @@ public sealed class ReportsController : ControllerBase
         return Ok(movies);
     }
 
-    // GET /api/reports/actors/most-active
+    /// <summary>
+    /// Gets the actors who have appeared in the most movies.
+    /// </summary>
+    /// <param name="paginationParameters">
+    /// The pagination parameters used to retrieve the report.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// A token used to cancel the asynchronous operation.
+    /// </param>
+    /// <returns>
+    /// A paginated collection of the most active actors.
+    /// </returns>
+    /// <response code="200">
+    /// Returns the paginated most-active-actors report.
+    /// </response>
+    /// <response code="400">
+    /// The supplied pagination parameters are invalid.
+    /// </response>
+    
     [HttpGet("actors/most-active")]
+    [ProducesResponseType(typeof(PagedResult<MostActiveActorDto>),StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails),StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<PagedResult<MostActiveActorDto>>>GetMostActiveActors(
             [FromQuery] PaginationParameters paginationParameters,
             CancellationToken cancellationToken = default)
@@ -68,8 +131,25 @@ public sealed class ReportsController : ControllerBase
         return Ok(actors);
     }
 
-    // GET /api/reports/movies/with-most-reviews
+    /// <summary>
+    /// Gets the movie that has received the most reviews.
+    /// </summary>
+    /// <param name="cancellationToken">
+    /// A token used to cancel the asynchronous operation.
+    /// </param>
+    /// <returns>
+    /// The movie with the highest number of reviews.
+    /// </returns>
+    /// <response code="200">
+    /// Returns the movie with the most reviews.
+    /// </response>
+    /// <response code="404">
+    /// No reviewed movie was found.
+    /// </response>
+    
     [HttpGet("movies/with-most-reviews")]
+    [ProducesResponseType(typeof(MovieWithMostReviewsDto),StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<MovieWithMostReviewsDto>>GetMovieWithMostReviews(
             CancellationToken cancellationToken = default)
     {
@@ -84,8 +164,28 @@ public sealed class ReportsController : ControllerBase
         return Ok(movie);
     }
 
-    // GET /api/reports/genres/popular
+    /// <summary>
+    /// Gets genres ordered by their popularity.
+    /// </summary>
+    /// <param name="paginationParameters">
+    /// The pagination parameters used to retrieve the report.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// A token used to cancel the asynchronous operation.
+    /// </param>
+    /// <returns>
+    /// A paginated collection of popular genres.
+    /// </returns>
+    /// <response code="200">
+    /// Returns the paginated popular-genres report.
+    /// </response>
+    /// <response code="400">
+    /// The supplied pagination parameters are invalid.
+    /// </response>
+    
     [HttpGet("genres/popular")]
+    [ProducesResponseType(typeof(PagedResult<PopularGenreDto>),StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails),StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<PagedResult<PopularGenreDto>>>GetPopularGenre(
             [FromQuery] PaginationParameters paginationParameters,
             CancellationToken cancellationToken = default)
