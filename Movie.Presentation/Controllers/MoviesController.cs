@@ -26,6 +26,26 @@ public class MoviesController : ControllerBase
         _serviceManager = serviceManager;
     }
 
+    /// <summary>
+    /// Gets a paginated list of movies.
+    /// </summary>
+    /// <param name="queryParameters">
+    /// Pagination and filtering parameters used to retrieve movies.
+    /// Movies can be filtered by genre, release year, and actor name.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// A token used to cancel the asynchronous operation.
+    /// </param>
+    /// <returns>
+    /// A paginated collection of movies.
+    /// </returns>
+    /// <response code="200">
+    /// Returns the paginated list of movies.
+    /// </response>
+    /// <response code="400">
+    /// The supplied pagination or filtering parameters are invalid.
+    /// </response>
+
     // GET: api/Movie
     [HttpGet]
     public async Task<ActionResult<PagedResult<MovieDto>>> GetMovies([FromQuery] MovieQueryParameters queryParameters,CancellationToken cancellationToken)
