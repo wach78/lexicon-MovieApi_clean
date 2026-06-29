@@ -120,7 +120,24 @@ public sealed class ActorsController : ControllerBase
         return Ok(result);
     }
 
-   
+    /// <summary>
+    /// Gets an actor by its unique identifier.
+    /// </summary>
+    /// <param name="id">
+    ///  The unique identifier of the actor.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// A token used to cancel the asynchronous operation.
+    /// </param>
+    /// <returns>
+    /// The requested actor.
+    /// </returns>
+    /// <response code="200">
+    /// Returns the requested actor.
+    /// </response>
+    /// <response code="404">
+    /// The actor was not found.
+    /// </response>
     [HttpGet("actors/{id:guid}")]
     [ProducesResponseType(typeof(ActorDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -140,9 +157,28 @@ public sealed class ActorsController : ControllerBase
 
         return Ok(actor);
     }
+    /// <summary>
+    /// Creates a new actor.
+    /// </summary>
+    /// <param name="actorCreateDto">
+    /// The information required to create the actor.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// A token used to cancel the asynchronous operation.
+    /// </param>
+    /// <returns>
+    /// The newly created actor.
+    /// </returns>
+    /// <response code="201">
+    /// The actor was created successfully.
+    /// </response>
+    /// <response code="400">
+    /// The supplied actor data is invalid.
+    /// </response>
 
-    // POST /api/actors
     [HttpPost("actors")]
+    [ProducesResponseType(typeof(ActorDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ActorDto>> PostActor(
         [FromBody] ActorCreateDto actorCreateDto,
         CancellationToken cancellationToken = default)
@@ -159,8 +195,36 @@ public sealed class ActorsController : ControllerBase
         );
     }
 
-    // PUT /api/actors/{id}
+    /// <summary>
+    /// Updates an existing actor.
+    /// </summary>
+    /// <param name="id">
+    /// The unique identifier of the actor to update.
+    /// </param>
+    /// <param name="actorUpdateDto">
+    /// The updated actor information.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// A token used to cancel the asynchronous operation.
+    /// </param>
+    /// <returns>
+    /// A result indicating whether the actor was updated successfully.
+    /// </returns>
+    /// <response code="204">
+    /// The actor was updated successfully.
+    /// </response>
+    /// <response code="400">
+    /// The route identifier does not match the identifier in the request body,
+    /// or the supplied actor data is invalid.
+    /// </response>
+    /// <response code="404">
+    /// The actor was not found.
+    /// </response>
+
     [HttpPut("actors/{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> PutActor(
         [FromRoute] Guid id,
         [FromBody] ActorUpdateDto actorUpdateDto,
