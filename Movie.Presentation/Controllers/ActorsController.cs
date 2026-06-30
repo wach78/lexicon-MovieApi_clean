@@ -1,6 +1,7 @@
 using Asp.Versioning;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Movie.Core.DTOs.Actor;
 using Movie.Core.Pagination;
 using Movie.Core.Parameters;
@@ -15,12 +16,14 @@ namespace Movie.Presentation.Controllers;
 public sealed class ActorsController : ControllerBase
 {
     private readonly IServiceManager _serviceManager;
+    private readonly ILogger<ActorsController> _logger;
 
-    public ActorsController(IServiceManager serviceManager)
+    public ActorsController(IServiceManager serviceManager, ILogger<ActorsController> logger)
     {
         ArgumentNullException.ThrowIfNull(serviceManager);
 
         _serviceManager = serviceManager;
+        _logger = logger;
     }
 
     /// <summary>
@@ -68,21 +71,46 @@ public sealed class ActorsController : ControllerBase
                 cancellationToken
             );
 
-        return result switch
+        switch (result)
         {
-            AddActorToMovieResult.Added => NoContent(),
+            case AddActorToMovieResult.Added:
+                _logger.LogInformation("Actor {ActorId} was added to movie {MovieId}",
+                    actorId,
+                    movieId);
 
-            AddActorToMovieResult.MovieNotFound =>
-                NotFound("Movie was not found."),
+                return NoContent();
 
-            AddActorToMovieResult.ActorNotFound =>
-                NotFound("Actor was not found."),
+            case AddActorToMovieResult.MovieNotFound:
+                _logger.LogInformation("Actor {ActorId} could not be added because movie {MovieId} was not found",
+                    actorId,
+                    movieId);
 
-            AddActorToMovieResult.ActorAlreadyAdded =>
-                BadRequest("Actor is already added to this movie."),
+                return NotFound("Movie was not found.");
 
-            _ => StatusCode(StatusCodes.Status500InternalServerError)
-        };
+            case AddActorToMovieResult.ActorNotFound:
+                _logger.LogInformation("Actor {ActorId} could not be added to movie {MovieId} because the actor was not found",
+                    actorId,
+                    movieId);
+
+                return NotFound("Actor was not found.");
+
+            case AddActorToMovieResult.ActorAlreadyAdded:
+                _logger.LogInformation("Actor {ActorId} is already associated with movie {MovieId}",
+                    actorId,
+                    movieId);
+
+                return BadRequest(
+                    "Actor is already added to this movie.");
+
+            default:
+                _logger.LogError("Unexpected result {AddActorResult} when adding actor {ActorId} to movie {MovieId}",
+                    result,
+                    actorId,
+                    movieId);
+
+                return StatusCode(
+                    StatusCodes.Status500InternalServerError);
+        }
     }
 
     /// <summary>
@@ -152,8 +180,14 @@ public sealed class ActorsController : ControllerBase
 
         if (actor is null)
         {
+            _logger.LogInformation("Actor with ID {ActorId} was not found",
+                id);
+
             return NotFound();
         }
+
+        _logger.LogDebug("Actor with ID {ActorId} was retrieved successfully",
+            id);
 
         return Ok(actor);
     }
@@ -187,6 +221,9 @@ public sealed class ActorsController : ControllerBase
             actorCreateDto,
             cancellationToken
         );
+
+        _logger.LogInformation("Actor with ID {ActorId} was created successfully",
+            actor.Id);
 
         return CreatedAtAction(
             nameof(GetActor),
@@ -232,6 +269,9 @@ public sealed class ActorsController : ControllerBase
     {
         if (id != actorUpdateDto.Id)
         {
+            _logger.LogWarning("Actor update rejected because route ID {RouteActorId} does not match body ID {BodyActorId}",
+                id,
+                actorUpdateDto.Id);
             return BadRequest();
         }
 
@@ -243,8 +283,14 @@ public sealed class ActorsController : ControllerBase
 
         if (!isUpdated)
         {
+            _logger.LogInformation("Actor with ID {ActorId} was not found",
+             id);
+
             return NotFound();
         }
+
+        _logger.LogInformation("Actor with ID {ActorId} was updated",
+             id);
 
         return NoContent();
     }
