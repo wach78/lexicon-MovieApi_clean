@@ -6,18 +6,21 @@ using Movie.Core.Pagination;
 using Movie.Core.Parameters;
 using Movie.Service.Contracts.Interfaces;
 using MovieEntity = Movie.Core.Entities.Movie;
+using Microsoft.Extensions.Logging;
 
 namespace Movie.Services;
 
 public class ReviewService : IReviewService
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ILogger<ReviewService> _logger;
 
-    public ReviewService(IUnitOfWork unitOfWork)
+    public ReviewService(IUnitOfWork unitOfWork, ILogger<ReviewService> logger)
     {
         ArgumentNullException.ThrowIfNull(unitOfWork);
 
         _unitOfWork = unitOfWork;
+        _logger = logger;
     }
 
     public async Task<ReviewDto?> CreateReviewAsync(Guid movieId, ReviewCreateDto reviewCreateDto, CancellationToken cancellationToken = default)
@@ -29,8 +32,13 @@ public class ReviewService : IReviewService
             cancellationToken
         );
 
+        _logger.LogDebug("Creating a review for movie {MovieId}",
+            movieId);
+
         if (movie is null)
         {
+            _logger.LogInformation("Review could not be created because movie {MovieId} was not found",
+                movieId);
             return null;
         }
 
@@ -44,6 +52,10 @@ public class ReviewService : IReviewService
         _unitOfWork.Reviews.Add(review);
 
         await _unitOfWork.CompleteAsync(cancellationToken);
+
+        _logger.LogInformation("Review {ReviewId} was created successfully for movie {MovieId}",
+            review.Id,
+            movieId);
 
         return new ReviewDto
         {
@@ -60,6 +72,9 @@ public class ReviewService : IReviewService
 
         if (review is null)
         {
+            _logger.LogInformation("Review with ID {ReviewId} was not found",
+                id);
+
             return false;
         }
 
@@ -67,12 +82,20 @@ public class ReviewService : IReviewService
 
         await _unitOfWork.CompleteAsync(cancellationToken);
 
+        _logger.LogInformation("Review with ID {ReviewId} was deleted successfully",
+            id);
+
         return true;
     }
 
     public async Task<PagedResult<ReviewDto>> GetReviewsAsync(PaginationParameters paginationParameters, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(paginationParameters);
+
+        _logger.LogDebug("Retrieving reviews for page {PageNumber} with page size {PageSize}",
+            paginationParameters.Page,
+            paginationParameters.PageSize);
+
         PagedResult<Review> reviews = await _unitOfWork.Reviews.GetAllAsync(paginationParameters, cancellationToken);
 
         IReadOnlyList<ReviewDto> reviewDto = reviews.Items
@@ -84,6 +107,11 @@ public class ReviewService : IReviewService
                 Rating = review.Rating
             })
             .ToList();
+
+        _logger.LogDebug("Retrieved {ReturnedReviewCount} reviews from a total of {TotalReviewCount} on page {CurrentPage}",
+            reviewDto.Count,
+            reviews.TotalItems,
+            reviews.CurrentPage);
 
         return new PagedResult<ReviewDto>
         {
@@ -102,6 +130,11 @@ public class ReviewService : IReviewService
     {
         ArgumentNullException.ThrowIfNull(paginationParameters);
 
+        _logger.LogDebug("Retrieving reviews for movie {MovieId}, page {PageNumber}, page size {PageSize}",
+            movieId,
+            paginationParameters.Page,
+            paginationParameters.PageSize);
+
         bool movieExists = await _unitOfWork.Movies.AnyAsync(
             movieId,
             cancellationToken
@@ -109,6 +142,9 @@ public class ReviewService : IReviewService
 
         if (!movieExists)
         {
+            _logger.LogInformation("Reviews could not be retrieved because movie {MovieId} was not found",
+                movieId);
+
             return null;
         }
 
@@ -128,6 +164,11 @@ public class ReviewService : IReviewService
                 Rating = review.Rating
             })
             .ToList();
+
+        _logger.LogDebug("Retrieved {ReturnedReviewCount} reviews for movie {MovieId} from a total of {TotalReviewCount}",
+            reviewDtos.Count,
+            movieId,
+            pagedReviews.TotalItems);
 
         return new PagedResult<ReviewDto>
         {
@@ -152,6 +193,10 @@ public class ReviewService : IReviewService
     {
         ArgumentNullException.ThrowIfNull(reviewPatchDto);
 
+        _logger.LogDebug("Updating review {ReviewId} for movie {MovieId}",
+            reviewId,
+            movieId);
+
         Review? review = await _unitOfWork.Reviews.GetAsync(
             reviewId,
             cancellationToken
@@ -159,6 +204,9 @@ public class ReviewService : IReviewService
 
         if (review is null || review.MovieId != movieId)
         {
+            _logger.LogInformation("Review {ReviewId} could not be updated because it was not found",
+                reviewId);
+
             return false;
         }
 
@@ -169,6 +217,10 @@ public class ReviewService : IReviewService
         );
 
         await _unitOfWork.CompleteAsync(cancellationToken);
+
+        _logger.LogInformation("Review {ReviewId} for movie {MovieId} was updated successfully",
+           reviewId,
+           movieId);
 
         return true;
     }
