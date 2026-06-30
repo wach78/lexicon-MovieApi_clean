@@ -1,6 +1,7 @@
 using Asp.Versioning;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Movie.Core.DTOs.Actor;
 using Movie.Core.DTOs.Movie;
 using Movie.Core.DTOs.Review;
@@ -18,12 +19,14 @@ namespace Movie.Presentation.Controllers;
 public class MoviesController : ControllerBase
 {
     private readonly IServiceManager _serviceManager;
+    private readonly ILogger<MoviesController> _logger;
 
-    public MoviesController(IServiceManager serviceManager)
+    public MoviesController(IServiceManager serviceManager, ILogger<MoviesController> logger)
     {
         ArgumentNullException.ThrowIfNull(serviceManager);
 
         _serviceManager = serviceManager;
+        _logger = logger;
     }
 
     /// <summary>
@@ -86,9 +89,13 @@ public class MoviesController : ControllerBase
 
         if (movie is null)
         {
+            _logger.LogInformation("Movie with ID {MovieId} was not found",
+                id);
             return NotFound();
         }
 
+        _logger.LogDebug("Movie with ID {MovieId} was retrieved successfully",
+            id);
         return Ok(movie);
     }
 
@@ -120,9 +127,13 @@ public class MoviesController : ControllerBase
 
         if (movie is null)
         {
+            _logger.LogInformation("Movie with ID {MovieId} was not found",
+                id);
             return NotFound();
         }
 
+        _logger.LogDebug("Movie details with ID {MovieId} was retrieved successfully",
+            id);
         return Ok(movie);
     }
 
@@ -164,24 +175,44 @@ public class MoviesController : ControllerBase
     {
         if (id != movieUpdateDto.Id)
         {
+            _logger.LogWarning("Movie update rejected because route ID {RouteMovieId} does not match body ID {BodyMovieId}",
+                id,
+                movieUpdateDto.Id);
+
             return BadRequest("Route id does not match body id.");
         }
 
         UpdateMovieResult updateMovieResult = await _serviceManager.Movies.UpdateMovieAsync(id, movieUpdateDto, cancellationToken);
 
-        return updateMovieResult switch
+        switch (updateMovieResult)
         {
-            UpdateMovieResult.MovieNotFound =>
-                NotFound("Movie not found."),
+            case UpdateMovieResult.MovieNotFound:
+                _logger.LogInformation("Movie with ID {MovieId} could not be updated because it was not found",
+                    id);
 
-            UpdateMovieResult.GenreNotFound =>
-                BadRequest("Genre does not exist."),
+                return NotFound("Movie not found.");
 
-            UpdateMovieResult.Updated =>
-                NoContent(),
+            case UpdateMovieResult.GenreNotFound:
+                _logger.LogInformation("Movie {MovieId} could not be updated because genre {GenreId} does not exist",
+                    id,
+                    movieUpdateDto.GenreId);
 
-            _ => StatusCode(StatusCodes.Status500InternalServerError)
-        };
+                return BadRequest("Genre does not exist.");
+
+            case UpdateMovieResult.Updated:
+                _logger.LogInformation("Movie with ID {MovieId} was updated successfully",
+                    id);
+
+                return NoContent();
+
+            default:
+                _logger.LogError("Movie update returned an unexpected result {UpdateResult} for movie {MovieId}",
+                    updateMovieResult,
+                    id);
+
+                return StatusCode(
+                    StatusCodes.Status500InternalServerError);
+        }
     }
 
     /// <summary>
@@ -214,8 +245,14 @@ public class MoviesController : ControllerBase
 
         if (movieDto is null)
         {
+            _logger.LogWarning("Movie creation failed because genre {GenreId} does not exist",
+                movieCreateDto.GenreId);
+
             return BadRequest("Genre does not exist.");
         }
+
+        _logger.LogInformation("Movie with ID {MovieId} was created successfully",
+            movieDto.Id);
 
         return CreatedAtAction(
             nameof(GetMovie),
@@ -253,9 +290,13 @@ public class MoviesController : ControllerBase
 
         if (!isDeleted)
         {
+            _logger.LogInformation("Movie with ID {MovieId} was not found",
+                id);
             return NotFound();
         }
 
+        _logger.LogInformation("Movie with ID {MovieId} was deleted",
+            id);
         return NoContent();
     }
 }
