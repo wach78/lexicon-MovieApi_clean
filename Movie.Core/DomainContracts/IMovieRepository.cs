@@ -16,6 +16,6 @@ public interface IMovieRepository
     void Remove(MovieEntity movie);
     Task<MovieEntity?> GetWithGenreAsync(Guid id, CancellationToken cancellationToken = default);
     Task<MovieEntity?> GetWithDetailsAsync(Guid id, CancellationToken cancellationToken = default);
-    Task<PagedResult<MovieEntity>> GetFilteredAsync(MovieQueryParameters queryParameters,CancellationToken cancellationToken = default);
+    Task<PagedResult<MovieEntity>> GetFilteredAsync(MovieQueryParameters queryParameters, CancellationToken cancellationToken = default);
     Task<MovieEntity?> GetWithActorsAsync(Guid id, CancellationToken cancellationToken = default);
 }

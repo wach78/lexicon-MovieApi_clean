@@ -50,7 +50,7 @@ public class MoviesController : ControllerBase
     /// </response>
 
     [HttpGet]
-    public async Task<ActionResult<PagedResult<MovieDto>>> GetMovies([FromQuery] MovieQueryParameters queryParameters,CancellationToken cancellationToken)
+    public async Task<ActionResult<PagedResult<MovieDto>>> GetMovies([FromQuery] MovieQueryParameters queryParameters, CancellationToken cancellationToken)
     {
         PagedResult<MovieDto> result =
             await _serviceManager.Movies.GetMoviesAsync(
@@ -81,7 +81,7 @@ public class MoviesController : ControllerBase
     /// </response>
 
     [HttpGet("{id:guid}")]
-    [ProducesResponseType(typeof(MovieDto),StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(MovieDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<MovieDto>> GetMovie([FromRoute] Guid id, CancellationToken cancellationToken)
     {
@@ -117,7 +117,7 @@ public class MoviesController : ControllerBase
     /// <response code="404">
     /// The movie was not found.
     /// </response>
-    
+
     [HttpGet("{id:guid}/details")]
     [ProducesResponseType(typeof(MovieDetailDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -165,7 +165,7 @@ public class MoviesController : ControllerBase
     /// <response code="500">
     /// An unexpected server error occurred.
     /// </response>
-    
+
     [HttpPut("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
@@ -283,7 +283,7 @@ public class MoviesController : ControllerBase
     [HttpDelete("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-   
+
     public async Task<IActionResult> DeleteMovie([FromRoute] Guid id, CancellationToken cancellationToken)
     {
         bool isDeleted = await _serviceManager.Movies.DeleteMovieAsync(id, cancellationToken);

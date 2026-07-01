@@ -43,11 +43,11 @@ public sealed class ReportsController : ControllerBase
     /// <response code="400">
     /// The supplied pagination parameters are invalid.
     /// </response>
-    
+
     [HttpGet("movies/average-ratings")]
-    [ProducesResponseType(typeof(PagedResult<MovieAverageRatingDto>),StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ValidationProblemDetails),StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<PagedResult<MovieAverageRatingDto>>>GetAverageRatingGenre(
+    [ProducesResponseType(typeof(PagedResult<MovieAverageRatingDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<PagedResult<MovieAverageRatingDto>>> GetAverageRatingGenre(
             [FromQuery] PaginationParameters paginationParameters,
             CancellationToken cancellationToken = default)
     {
@@ -79,11 +79,11 @@ public sealed class ReportsController : ControllerBase
     /// <response code="400">
     /// The supplied pagination parameters are invalid.
     /// </response>
-    
+
     [HttpGet("movies/top5pergenre")]
-    [ProducesResponseType(typeof(PagedResult<TopMoviesPerGenreDto>),StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ValidationProblemDetails),StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<PagedResult<TopMoviesPerGenreDto>>>GetTop5MoviesPerGenre(
+    [ProducesResponseType(typeof(PagedResult<TopMoviesPerGenreDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<PagedResult<TopMoviesPerGenreDto>>> GetTop5MoviesPerGenre(
             [FromQuery] PaginationParameters paginationParameters,
             CancellationToken cancellationToken = default)
     {
@@ -114,11 +114,11 @@ public sealed class ReportsController : ControllerBase
     /// <response code="400">
     /// The supplied pagination parameters are invalid.
     /// </response>
-    
+
     [HttpGet("actors/most-active")]
-    [ProducesResponseType(typeof(PagedResult<MostActiveActorDto>),StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ValidationProblemDetails),StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<PagedResult<MostActiveActorDto>>>GetMostActiveActors(
+    [ProducesResponseType(typeof(PagedResult<MostActiveActorDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<PagedResult<MostActiveActorDto>>> GetMostActiveActors(
             [FromQuery] PaginationParameters paginationParameters,
             CancellationToken cancellationToken = default)
     {
@@ -146,11 +146,11 @@ public sealed class ReportsController : ControllerBase
     /// <response code="404">
     /// No reviewed movie was found.
     /// </response>
-    
+
     [HttpGet("movies/with-most-reviews")]
-    [ProducesResponseType(typeof(MovieWithMostReviewsDto),StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(MovieWithMostReviewsDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<MovieWithMostReviewsDto>>GetMovieWithMostReviews(
+    public async Task<ActionResult<MovieWithMostReviewsDto>> GetMovieWithMostReviews(
             CancellationToken cancellationToken = default)
     {
         MovieWithMostReviewsDto? movie =
@@ -182,11 +182,11 @@ public sealed class ReportsController : ControllerBase
     /// <response code="400">
     /// The supplied pagination parameters are invalid.
     /// </response>
-    
+
     [HttpGet("genres/popular")]
-    [ProducesResponseType(typeof(PagedResult<PopularGenreDto>),StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ValidationProblemDetails),StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<PagedResult<PopularGenreDto>>>GetPopularGenre(
+    [ProducesResponseType(typeof(PagedResult<PopularGenreDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<PagedResult<PopularGenreDto>>> GetPopularGenre(
             [FromQuery] PaginationParameters paginationParameters,
             CancellationToken cancellationToken = default)
     {

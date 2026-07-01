@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Movie.Core.DTOs.Actor;
@@ -6,7 +7,6 @@ using Movie.Core.Entities;
 using Movie.Core.Pagination;
 using Movie.Core.Parameters;
 using Movie.Service.Contracts.Interfaces;
-using Asp.Versioning;
 namespace Movie.Presentation.Controllers;
 
 [ApiVersion(1.0)]
@@ -44,8 +44,8 @@ public class ReviewsController : ControllerBase
     /// </response>
     /// 
     [HttpGet("reviews")]
-    [ProducesResponseType(typeof(PagedResult<ReviewDto>),StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ValidationProblemDetails),StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(PagedResult<ReviewDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<PagedResult<ReviewDto>>> GetReview(
         [FromQuery] PaginationParameters paginationParameters,
         CancellationToken cancellationToken)
@@ -130,10 +130,10 @@ public class ReviewsController : ControllerBase
     /// <response code="404">
     /// The movie was not found.
     /// </response>
-    
+
     [HttpPost("movies/{movieId:guid}/reviews")]
-    [ProducesResponseType(typeof(ReviewDto),StatusCodes.Status201Created)]
-    [ProducesResponseType(typeof(ValidationProblemDetails),StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ReviewDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ReviewDto>> PostReview([FromRoute] Guid movieId, [FromBody] ReviewCreateDto reviewCreateDto, CancellationToken cancellationToken = default)
     {
@@ -180,7 +180,7 @@ public class ReviewsController : ControllerBase
     /// <response code="404">
     /// The review was not found.
     /// </response>
-    
+
     [HttpDelete("reviews/{id:guid}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -227,11 +227,11 @@ public class ReviewsController : ControllerBase
     /// <response code="404">
     /// The movie or review was not found.
     /// </response>
-    
+
     [HttpPatch("movies/{movieId:guid}/reviews/{reviewId:guid}")]
     [MapToApiVersion(2.0)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(typeof(ValidationProblemDetails),StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> PatchReview(
         [FromRoute] Guid movieId,

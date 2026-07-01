@@ -1,6 +1,7 @@
 using Asp.Versioning;
 using Asp.Versioning.ApiExplorer;
 using Asp.Versioning.OpenApi;
+using Asp.Versioning.OpenApi.Transformers;
 using Microsoft.EntityFrameworkCore;
 using Movie.Core.DomainContracts;
 using Movie.Data;
@@ -11,7 +12,6 @@ using Movie.Service.Contracts.Interfaces;
 using Movie.Services;
 using MovieApi.Extensions;
 using Scalar.AspNetCore;
-using Asp.Versioning.OpenApi.Transformers;
 
 namespace MovieApi;
 
@@ -51,7 +51,7 @@ public class Program
         builder.Services.AddScoped<IMovieRepository, MovieRepository>();
         builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
         builder.Services.AddScoped<IActorRepository, ActorRepository>();
-        builder.Services.AddScoped<IMovieDetailsRepository,MovieDetailsRepository>();
+        builder.Services.AddScoped<IMovieDetailsRepository, MovieDetailsRepository>();
         builder.Services.AddScoped<IGenreRepository, GenreRepository>();
         builder.Services.AddScoped<IReportRepository, ReportRepository>();
         builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();

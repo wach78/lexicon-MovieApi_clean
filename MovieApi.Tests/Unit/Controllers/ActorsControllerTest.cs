@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Movie.Core.DTOs.Actor;
 using Movie.Core.Pagination;
@@ -16,6 +17,7 @@ public sealed class ActorsControllerTest
     private readonly Mock<IActorService> _actorServiceMock;
     private readonly Mock<IServiceManager> _serviceManagerMock;
     private readonly ActorsController _controller;
+    private readonly Mock<ILogger<ActorsController>> _loggerMock;
 
     public ActorsControllerTest()
     {
@@ -25,12 +27,15 @@ public sealed class ActorsControllerTest
         _serviceManagerMock =
             new Mock<IServiceManager>(MockBehavior.Strict);
 
+        _loggerMock = new Mock<ILogger<ActorsController>>();
+
         _serviceManagerMock
             .SetupGet(serviceManager => serviceManager.Actors)
             .Returns(_actorServiceMock.Object);
 
         _controller = new ActorsController(
-            _serviceManagerMock.Object
+            _serviceManagerMock.Object,
+             _loggerMock.Object
         );
     }
 
@@ -301,7 +306,6 @@ public sealed class ActorsControllerTest
                 actorId,
                 cancellationToken);
 
- 
         OkObjectResult okResult =
             Assert.IsType<OkObjectResult>(actionResult.Result);
 
