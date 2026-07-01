@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using Movie.Core.DTOs.Review;
@@ -20,7 +21,7 @@ public class ReviewsControllerTest
     public ReviewsControllerTest()
     {
         _reviewServiceMock =
-            new Mock<IReviewService>(MockBehavior.Strict);
+        new Mock<IReviewService>(MockBehavior.Strict);
 
         _serviceManagerMock =
             new Mock<IServiceManager>(MockBehavior.Strict);
@@ -29,9 +30,14 @@ public class ReviewsControllerTest
             .SetupGet(serviceManager => serviceManager.Reviews)
             .Returns(_reviewServiceMock.Object);
 
-        _controller = new ReviewsController(
-            _serviceManagerMock.Object
-        );
+        _controller = new ReviewsController(_serviceManagerMock.Object)
+        {
+            ControllerContext = new ControllerContext
+            {
+                RouteData = new RouteData()
+            }
+        };
+
     }
 
     [Fact]
@@ -204,9 +210,8 @@ public class ReviewsControllerTest
     }
 
     [Fact]
-    public async Task PostReview_WhenServiceCreatesReview_ReturnsCreatedWithReview()
+    public async Task PostReview_WhenServiceCreatesReview_ReturnsCreatedAtActionWithReview()
     {
-        // Arrange
         Guid movieId = Guid.CreateVersion7();
         CancellationToken cancellationToken = CancellationToken.None;
 
@@ -238,11 +243,15 @@ public class ReviewsControllerTest
                 reviewCreateDto,
                 cancellationToken);
 
-        CreatedResult createdResult =
-            Assert.IsType<CreatedResult>(actionResult.Result);
+        CreatedAtActionResult createdResult =
+            Assert.IsType<CreatedAtActionResult>(actionResult.Result);
 
-        Assert.Equal($"/api/v1/reviews/{createdReview.Id}", createdResult.Location);
-        Assert.Same(createdReview, createdResult.Value);
+        Assert.Equal(nameof(ReviewsController.GetMovieReviews), createdResult.ActionName);
+        Assert.Equal(createdReview, createdResult.Value);
+
+        Assert.NotNull(createdResult.RouteValues);
+        Assert.Equal("1", createdResult.RouteValues["version"]?.ToString());
+        Assert.Equal(movieId, createdResult.RouteValues["movieId"]);
 
         _reviewServiceMock.Verify(
             service => service.CreateReviewAsync(

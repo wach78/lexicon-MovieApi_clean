@@ -22,7 +22,7 @@ public class Review
         Rating = rating;
     }
 
-    public void Update(string reviewerName, string comment,int rating)
+    public void Update(string reviewerName, string comment, int rating)
     {
         ReviewerName = reviewerName;
         Comment = comment;

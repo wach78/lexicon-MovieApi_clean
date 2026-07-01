@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using Movie.Core.DomainContracts;
 using Movie.Core.DTOs.Actor;
 using Movie.Core.DTOs.Review;
@@ -6,7 +7,6 @@ using Movie.Core.Pagination;
 using Movie.Core.Parameters;
 using Movie.Service.Contracts.Interfaces;
 using MovieEntity = Movie.Core.Entities.Movie;
-using Microsoft.Extensions.Logging;
 
 namespace Movie.Services;
 
@@ -182,7 +182,7 @@ public class ReviewService : IReviewService
 
     public async Task<bool> MovieExistsAsync(Guid movieId, CancellationToken cancellationToken = default)
     {
-        return await _unitOfWork.Movies.AnyAsync(movieId,cancellationToken);
+        return await _unitOfWork.Movies.AnyAsync(movieId, cancellationToken);
     }
 
     public async Task<bool> PatchReviewAsync(

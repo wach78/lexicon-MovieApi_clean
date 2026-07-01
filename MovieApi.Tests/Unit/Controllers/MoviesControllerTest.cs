@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Movie.Core.DTOs.Actor;
 using Movie.Core.DTOs.Movie;
@@ -19,6 +20,7 @@ public sealed class MoviesControllerTests
     private readonly Mock<IMovieService> _movieServiceMock;
     private readonly Mock<IServiceManager> _serviceManagerMock;
     private readonly MoviesController _controller;
+    private readonly Mock<ILogger<MoviesController>> _loggerMock;
 
     public MoviesControllerTests()
     {
@@ -29,7 +31,12 @@ public sealed class MoviesControllerTests
             .SetupGet(serviceManager => serviceManager.Movies)
             .Returns(_movieServiceMock.Object);
 
-        _controller = new MoviesController(_serviceManagerMock.Object);
+        _loggerMock = new Mock<ILogger<MoviesController>>();
+
+        _controller = new MoviesController(
+           _serviceManagerMock.Object,
+           _loggerMock.Object
+       );
     }
 
     [Theory]
@@ -179,7 +186,7 @@ public sealed class MoviesControllerTests
             .Setup(service => service.GetMovieByIdAsync(id, cancellationToken))
             .ReturnsAsync(expectedMovie);
 
-        ActionResult<MovieDto> actionResult = await _controller.GetMovie(id);
+        ActionResult<MovieDto> actionResult = await _controller.GetMovie(id, cancellationToken);
 
         OkObjectResult okResult =
             Assert.IsType<OkObjectResult>(actionResult.Result);
@@ -208,7 +215,7 @@ public sealed class MoviesControllerTests
             .ReturnsAsync((MovieDto?)null);
 
         ActionResult<MovieDto> actionResult =
-            await _controller.GetMovie(id);
+            await _controller.GetMovie(id, cancellationToken);
 
         Assert.IsType<NotFoundResult>(actionResult.Result);
 

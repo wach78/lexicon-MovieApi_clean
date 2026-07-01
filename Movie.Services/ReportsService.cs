@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using Movie.Core.DomainContracts;
 using Movie.Core.DTOs.Actor;
 using Movie.Core.DTOs.Movie;
@@ -5,7 +6,6 @@ using Movie.Core.DTOs.Report;
 using Movie.Core.Pagination;
 using Movie.Core.Parameters;
 using Movie.Service.Contracts.Interfaces;
-using Microsoft.Extensions.Logging;
 
 namespace Movie.Services;
 
@@ -22,7 +22,7 @@ public sealed class ReportsService : IReportsService
         _logger = logger;
     }
 
-    public async Task<PagedResult<MovieAverageRatingDto>>GetAverageRatingsByGenreAsync(
+    public async Task<PagedResult<MovieAverageRatingDto>> GetAverageRatingsByGenreAsync(
             PaginationParameters paginationParameters,
             CancellationToken cancellationToken = default)
     {
@@ -45,7 +45,7 @@ public sealed class ReportsService : IReportsService
         return result;
     }
 
-    public async Task<PagedResult<TopMoviesPerGenreDto>>GetTopMoviesPerGenreAsync(
+    public async Task<PagedResult<TopMoviesPerGenreDto>> GetTopMoviesPerGenreAsync(
             PaginationParameters paginationParameters,
             CancellationToken cancellationToken = default)
     {
@@ -69,7 +69,7 @@ public sealed class ReportsService : IReportsService
         return result;
     }
 
-    public async Task<PagedResult<MostActiveActorDto>>GetMostActiveActorsAsync(
+    public async Task<PagedResult<MostActiveActorDto>> GetMostActiveActorsAsync(
             PaginationParameters paginationParameters,
             CancellationToken cancellationToken = default)
     {
@@ -92,7 +92,7 @@ public sealed class ReportsService : IReportsService
         return result;
     }
 
-    public async Task<MovieWithMostReviewsDto?>GetMovieWithMostReviewsAsync(
+    public async Task<MovieWithMostReviewsDto?> GetMovieWithMostReviewsAsync(
             CancellationToken cancellationToken = default)
     {
         MovieWithMostReviewsDto? movie = await _unitOfWork.Reports.GetMovieWithMostReviewsAsync(
@@ -110,7 +110,7 @@ public sealed class ReportsService : IReportsService
         return movie;
     }
 
-    public async Task<PagedResult<PopularGenreDto>>GetPopularGenresAsync(
+    public async Task<PagedResult<PopularGenreDto>> GetPopularGenresAsync(
             PaginationParameters paginationParameters,
             CancellationToken cancellationToken = default)
     {
